@@ -2,9 +2,7 @@
   "name": "Financial AI Agent - Supabase Analysis & Trend Prediction",
   "nodes": [
     {
-      "parameters": {
-        "options": {}
-      },
+      "parameters": { "options": {} },
       "id": "chat-trigger",
       "name": "When chat message received",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
@@ -14,7 +12,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Extract optional date range from the user message.\n// e.g. \"show me data from 2026-01-01 to 2026-03-31\"\n// Falls back to last 90 days if no dates found.\nconst chatInput = $input.first().json.chatInput || '';\n\nconst dates = chatInput.match(/(\\d{4}-\\d{2}-\\d{2})/g) || [];\nconst today = new Date();\nconst ago90 = new Date(today);\nago90.setDate(today.getDate() - 90);\n\nreturn [{\n  json: {\n    chatInput,\n    dateRangeStart: dates[0] || ago90.toISOString().split('T')[0],\n    dateRangeEnd:   dates[1] || today.toISOString().split('T')[0]\n  }\n}];"
+        "jsCode": "const chatInput = $input.first().json.chatInput || '';\nconst dates = chatInput.match(/(\\d{4}-\\d{2}-\\d{2})/g) || [];\nconst today = new Date();\nconst ago90 = new Date(today);\nago90.setDate(today.getDate() - 90);\nreturn [{\n  json: {\n    chatInput,\n    dateRangeStart: dates[0] || ago90.toISOString().split('T')[0],\n    dateRangeEnd:   dates[1] || today.toISOString().split('T')[0]\n  }\n}];"
       },
       "id": "parse-chat-input",
       "name": "Parse Chat Input",
@@ -30,16 +28,13 @@
           "queryReplacement": "={{ $('Parse Chat Input').item.json.dateRangeStart }},={{ $('Parse Chat Input').item.json.dateRangeEnd }}"
         }
       },
-      "id": "query-daily-aggregates",
+      "id": "query-daily",
       "name": "Supabase - Daily Aggregates",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [700, 140],
       "credentials": {
-        "postgres": {
-          "id": "supabase-postgres-cred",
-          "name": "Supabase PostgreSQL"
-        }
+        "postgres": { "id": "supabase-postgres-cred", "name": "Supabase PostgreSQL" }
       }
     },
     {
@@ -50,36 +45,30 @@
           "queryReplacement": "={{ $('Parse Chat Input').item.json.dateRangeStart }},={{ $('Parse Chat Input').item.json.dateRangeEnd }}"
         }
       },
-      "id": "query-plan-breakdown",
+      "id": "query-plan",
       "name": "Supabase - Plan & Method Breakdown",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [700, 300],
       "credentials": {
-        "postgres": {
-          "id": "supabase-postgres-cred",
-          "name": "Supabase PostgreSQL"
-        }
+        "postgres": { "id": "supabase-postgres-cred", "name": "Supabase PostgreSQL" }
       }
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "WITH monthly AS (\n  SELECT\n    date_trunc('month', payment_date)                                          AS month,\n    SUM(amount)                                                                AS monthly_total,\n    COUNT(DISTINCT customer_id)                                                AS unique_customers,\n    SUM(CASE WHEN payment_status = 'completed' THEN amount ELSE 0 END)        AS completed_amount,\n    SUM(CASE WHEN payment_status = 'pending'   THEN amount ELSE 0 END)        AS pending_amount,\n    SUM(CASE WHEN payment_status = 'failed'    THEN amount ELSE 0 END)        AS failed_amount\n  FROM payments\n  WHERE payment_date >= $1\n    AND payment_date <  $2::date + INTERVAL '1 day'\n  GROUP BY 1\n)\nSELECT\n  month::date AS month,\n  monthly_total,\n  unique_customers,\n  completed_amount,\n  pending_amount,\n  failed_amount,\n  LAG(monthly_total) OVER (ORDER BY month) AS prev_month_total,\n  ROUND(\n    ((monthly_total - LAG(monthly_total) OVER (ORDER BY month))\n    / NULLIF(LAG(monthly_total) OVER (ORDER BY month), 0)) * 100\n  , 2) AS mom_pct_change\nFROM monthly\nORDER BY month ASC;",
+        "query": "WITH monthly AS (\n  SELECT\n    date_trunc('month', payment_date) AS month,\n    SUM(amount) AS monthly_total,\n    COUNT(DISTINCT customer_id) AS unique_customers,\n    SUM(CASE WHEN payment_status = 'completed' THEN amount ELSE 0 END) AS completed_amount,\n    SUM(CASE WHEN payment_status = 'pending'   THEN amount ELSE 0 END) AS pending_amount,\n    SUM(CASE WHEN payment_status = 'failed'    THEN amount ELSE 0 END) AS failed_amount\n  FROM payments\n  WHERE payment_date >= $1\n    AND payment_date <  $2::date + INTERVAL '1 day'\n  GROUP BY 1\n)\nSELECT\n  month::date AS month,\n  monthly_total,\n  unique_customers,\n  completed_amount,\n  pending_amount,\n  failed_amount,\n  LAG(monthly_total) OVER (ORDER BY month) AS prev_month_total,\n  ROUND(((monthly_total - LAG(monthly_total) OVER (ORDER BY month))\n    / NULLIF(LAG(monthly_total) OVER (ORDER BY month), 0)) * 100, 2) AS mom_pct_change\nFROM monthly\nORDER BY month ASC;",
         "options": {
           "queryReplacement": "={{ $('Parse Chat Input').item.json.dateRangeStart }},={{ $('Parse Chat Input').item.json.dateRangeEnd }}"
         }
       },
-      "id": "query-monthly-trends",
+      "id": "query-trends",
       "name": "Supabase - Monthly Trends",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [700, 460],
       "credentials": {
-        "postgres": {
-          "id": "supabase-postgres-cred",
-          "name": "Supabase PostgreSQL"
-        }
+        "postgres": { "id": "supabase-postgres-cred", "name": "Supabase PostgreSQL" }
       }
     },
     {
@@ -90,27 +79,35 @@
           "queryReplacement": "={{ $('Parse Chat Input').item.json.dateRangeStart }},={{ $('Parse Chat Input').item.json.dateRangeEnd }}"
         }
       },
-      "id": "query-customer-revenue",
+      "id": "query-country",
       "name": "Supabase - Customer Revenue by Country",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [700, 620],
       "credentials": {
-        "postgres": {
-          "id": "supabase-postgres-cred",
-          "name": "Supabase PostgreSQL"
-        }
+        "postgres": { "id": "supabase-postgres-cred", "name": "Supabase PostgreSQL" }
       }
     },
     {
       "parameters": {
-        "jsCode": "const daily      = $('Supabase - Daily Aggregates').all().map(i => i.json);\nconst planBreak  = $('Supabase - Plan & Method Breakdown').all().map(i => i.json);\nconst trends     = $('Supabase - Monthly Trends').all().map(i => i.json);\nconst byCountry  = $('Supabase - Customer Revenue by Country').all().map(i => i.json);\nconst parsed     = $('Parse Chat Input').first().json;\n\n// Linear regression on monthly completed revenue\nfunction linearRegression(rows) {\n  const n = rows.length;\n  if (n < 2) return { slope: 0, intercept: parseFloat(rows[0]?.completed_amount || rows[0]?.monthly_total || 0), r2: 0 };\n  const y = rows.map(r => parseFloat(r.completed_amount || r.monthly_total) || 0);\n  const x = y.map((_, i) => i);\n  const xm = x.reduce((a, b) => a + b, 0) / n;\n  const ym = y.reduce((a, b) => a + b, 0) / n;\n  const num = x.reduce((s, xi, i) => s + (xi - xm) * (y[i] - ym), 0);\n  const den = x.reduce((s, xi) => s + (xi - xm) ** 2, 0);\n  const slope = den ? num / den : 0;\n  const intercept = ym - slope * xm;\n  const ssRes = y.reduce((s, yi, i) => s + (yi - (slope * i + intercept)) ** 2, 0);\n  const ssTot = y.reduce((s, yi) => s + (yi - ym) ** 2, 0);\n  return {\n    slope:     Math.round(slope * 100) / 100,\n    intercept: Math.round(intercept * 100) / 100,\n    r2:        ssTot ? Math.round((1 - ssRes / ssTot) * 1000) / 1000 : 1\n  };\n}\n\nconst reg = linearRegression(trends);\nconst predict = n => Math.round((reg.slope * n + reg.intercept) * 100) / 100;\n\n// Totals\nconst completedRows = daily.filter(r => r.payment_status === 'completed');\nconst pendingRows   = daily.filter(r => r.payment_status === 'pending');\nconst failedRows    = daily.filter(r => r.payment_status === 'failed');\nconst sum = rows => Math.round(rows.reduce((s, r) => s + parseFloat(r.total_amount || 0), 0) * 100) / 100;\n\nconst totalRevenue   = sum(completedRows);\nconst totalPending   = sum(pendingRows);\nconst totalFailed    = sum(failedRows);\nconst totalAll       = sum(daily);\nconst failureRate    = totalAll > 0 ? Math.round((totalFailed / totalAll) * 10000) / 100 : 0;\n\n// Top plan by revenue\nconst byPlan = {};\nplanBreak.filter(r => r.payment_status === 'completed').forEach(r => {\n  byPlan[r.plan] = (byPlan[r.plan] || 0) + parseFloat(r.total_amount || 0);\n});\nconst topPlan = Object.entries(byPlan).sort((a, b) => b[1] - a[1])[0];\n\n// Top country by revenue\nconst topCountry = byCountry[0];\n\n// MoM trend\nconst last = trends[trends.length - 1];\nconst trendDir = (last?.mom_pct_change ?? 0) > 0 ? 'upward'\n               : (last?.mom_pct_change ?? 0) < 0 ? 'downward' : 'stable';\n\n// Anomaly: plans with failed rate > 20%\nconst planFailures = {};\nconst planTotals   = {};\nplanBreak.forEach(r => {\n  const key = r.plan || 'unknown';\n  planTotals[key] = (planTotals[key] || 0) + parseInt(r.transaction_count || 0);\n  if (r.payment_status === 'failed') {\n    planFailures[key] = (planFailures[key] || 0) + parseInt(r.transaction_count || 0);\n  }\n});\nconst planAnomalies = Object.entries(planTotals)\n  .map(([plan, total]) => ({\n    plan,\n    failureRate: Math.round(((planFailures[plan] || 0) / total) * 10000) / 100\n  }))\n  .filter(p => p.failureRate > 20);\n\nreturn [{\n  json: {\n    chatInput:      parsed.chatInput,\n    dateRangeStart: parsed.dateRangeStart,\n    dateRangeEnd:   parsed.dateRangeEnd,\n    daily,\n    planBreakdown:  planBreak,\n    trends,\n    byCountry,\n    analysis: {\n      totalRevenue,\n      totalPending,\n      totalFailed,\n      totalAll,\n      failureRate,\n      topPlan:        topPlan ? { plan: topPlan[0], revenue: Math.round(topPlan[1] * 100) / 100 } : null,\n      topCountry:     topCountry ? { country: topCountry.country, revenue: parseFloat(topCountry.total_revenue) } : null,\n      trendDirection: trendDir,\n      latestMoMGrowth: parseFloat(last?.mom_pct_change || 0),\n      planAnomalies,\n      regression: reg,\n      predictions: {\n        nextMonth:    predict(trends.length),\n        twoMonthsOut: predict(trends.length + 1)\n      }\n    }\n  }\n}];"
+        "mode": "append",
+        "options": {}
+      },
+      "id": "merge-queries",
+      "name": "Wait for All Queries",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [960, 380]
+    },
+    {
+      "parameters": {
+        "jsCode": "// All 4 queries have completed by the time this node runs.\nconst daily     = $('Supabase - Daily Aggregates').all().map(i => i.json);\nconst planBreak = $('Supabase - Plan & Method Breakdown').all().map(i => i.json);\nconst trends    = $('Supabase - Monthly Trends').all().map(i => i.json);\nconst byCountry = $('Supabase - Customer Revenue by Country').all().map(i => i.json);\nconst parsed    = $('Parse Chat Input').first().json;\n\nfunction linearRegression(rows, field) {\n  const y = rows.map(r => parseFloat(r[field]) || 0);\n  const n = y.length;\n  if (n < 2) return { slope: 0, intercept: y[0] || 0, r2: 0 };\n  const x = y.map((_, i) => i);\n  const xm = x.reduce((a, b) => a + b, 0) / n;\n  const ym = y.reduce((a, b) => a + b, 0) / n;\n  const num = x.reduce((s, xi, i) => s + (xi - xm) * (y[i] - ym), 0);\n  const den = x.reduce((s, xi) => s + (xi - xm) ** 2, 0);\n  const slope = den ? num / den : 0;\n  const intercept = ym - slope * xm;\n  const ssRes = y.reduce((s, yi, i) => s + (yi - (slope * i + intercept)) ** 2, 0);\n  const ssTot = y.reduce((s, yi) => s + (yi - ym) ** 2, 0);\n  return {\n    slope:     Math.round(slope * 100) / 100,\n    intercept: Math.round(intercept * 100) / 100,\n    r2:        ssTot ? Math.round((1 - ssRes / ssTot) * 1000) / 1000 : 1\n  };\n}\n\nconst reg = linearRegression(trends, 'completed_amount');\nconst predict = n => Math.round((reg.slope * n + reg.intercept) * 100) / 100;\n\nconst sum = (rows, field) => Math.round(rows.reduce((s, r) => s + parseFloat(r[field] || 0), 0) * 100) / 100;\n\nconst totalRevenue = sum(trends, 'completed_amount');\nconst totalPending = sum(trends, 'pending_amount');\nconst totalFailed  = sum(trends, 'failed_amount');\nconst totalAll     = sum(trends, 'monthly_total');\nconst failureRate  = totalAll > 0 ? Math.round((totalFailed / totalAll) * 10000) / 100 : 0;\n\n// Top plan by completed revenue\nconst planRevenue = {};\nplanBreak.filter(r => r.payment_status === 'completed').forEach(r => {\n  planRevenue[r.plan] = (planRevenue[r.plan] || 0) + parseFloat(r.total_amount || 0);\n});\nconst topPlanEntry = Object.entries(planRevenue).sort((a, b) => b[1] - a[1])[0];\n\n// Plan anomalies: failure rate > 20%\nconst planTotals   = {};\nconst planFailed   = {};\nplanBreak.forEach(r => {\n  const k = r.plan || 'unknown';\n  planTotals[k] = (planTotals[k] || 0) + parseInt(r.transaction_count || 0);\n  if (r.payment_status === 'failed') planFailed[k] = (planFailed[k] || 0) + parseInt(r.transaction_count || 0);\n});\nconst planAnomalies = Object.entries(planTotals)\n  .map(([plan, total]) => ({ plan, failureRate: Math.round(((planFailed[plan] || 0) / total) * 10000) / 100 }))\n  .filter(p => p.failureRate > 20);\n\nconst last = trends[trends.length - 1];\nconst trendDirection = (last?.mom_pct_change ?? 0) > 0 ? 'upward'\n                     : (last?.mom_pct_change ?? 0) < 0 ? 'downward' : 'stable';\n\nreturn [{\n  json: {\n    chatInput:      parsed.chatInput,\n    dateRangeStart: parsed.dateRangeStart,\n    dateRangeEnd:   parsed.dateRangeEnd,\n    daily,\n    planBreakdown:  planBreak,\n    trends,\n    byCountry,\n    analysis: {\n      totalRevenue,\n      totalPending,\n      totalFailed,\n      totalAll,\n      failureRate,\n      topPlan:         topPlanEntry ? { plan: topPlanEntry[0], revenue: Math.round(topPlanEntry[1] * 100) / 100 } : null,\n      topCountry:      byCountry[0] ? { country: byCountry[0].country, revenue: parseFloat(byCountry[0].total_revenue) } : null,\n      trendDirection,\n      latestMoMGrowth: parseFloat(last?.mom_pct_change || 0),\n      planAnomalies,\n      regression: reg,\n      predictions: {\n        nextMonth:    predict(trends.length),\n        twoMonthsOut: predict(trends.length + 1)\n      }\n    }\n  }\n}];"
       },
       "id": "compute-analysis",
       "name": "Compute Analysis & Predictions",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [980, 380]
+      "position": [1180, 380]
     },
     {
       "parameters": {
@@ -119,40 +116,34 @@
           "values": [
             {
               "role": "system",
-              "content": "You are an expert financial analyst AI embedded in a chat interface. You receive pre-computed revenue and payment data from a SaaS business (customers, payments, plans, countries) and the user's question.\n\nYour response must:\n1. Directly answer the user's question with specific numbers.\n2. Provide key insights: revenue health, plan performance, top markets.\n3. Highlight the payment failure rate and any plan-level anomalies.\n4. Give a clear revenue prediction for the next 1–2 months with confidence note based on R².\n5. Provide 2–3 concrete, actionable recommendations.\n\nFormat as clean Markdown with headers and summary tables. Be direct and data-driven."
+              "content": "You are an expert financial analyst AI embedded in a chat interface. You receive pre-computed revenue and payment data from a SaaS business (customers, payments, plans, countries) and the user's question.\n\nYour response must:\n1. Directly answer the user's question with specific numbers.\n2. Provide key insights: revenue health, plan performance, top markets.\n3. Highlight the payment failure rate and any plan-level anomalies.\n4. Give a clear revenue prediction for the next 1–2 months with a confidence note based on R².\n5. Provide 2–3 concrete, actionable recommendations.\n\nFormat as clean Markdown with headers and summary tables. Be direct and data-driven."
             },
             {
               "role": "user",
-              "content": "=User question: {{ $json.chatInput }}\n\nDate range: {{ $json.dateRangeStart }} → {{ $json.dateRangeEnd }}\n\n## Revenue Summary\n- Total completed revenue: ${{ $json.analysis.totalRevenue }}\n- Total pending: ${{ $json.analysis.totalPending }}\n- Total failed: ${{ $json.analysis.totalFailed }}\n- Overall failure rate: {{ $json.analysis.failureRate }}%\n- Top plan by revenue: {{ $json.analysis.topPlan ? $json.analysis.topPlan.plan + ' ($' + $json.analysis.topPlan.revenue + ')' : 'N/A' }}\n- Top country by revenue: {{ $json.analysis.topCountry ? $json.analysis.topCountry.country + ' ($' + $json.analysis.topCountry.revenue + ')' : 'N/A' }}\n- Trend direction: {{ $json.analysis.trendDirection }}\n- Latest month-over-month change: {{ $json.analysis.latestMoMGrowth }}%\n\n## Plan & Payment Method Breakdown\n{{ JSON.stringify($json.planBreakdown, null, 2) }}\n\n## Monthly Trends (completed vs pending vs failed)\n{{ JSON.stringify($json.trends, null, 2) }}\n\n## Revenue by Country & Plan\n{{ JSON.stringify($json.byCountry, null, 2) }}\n\n## Plan Anomalies (failure rate > 20%)\n{{ JSON.stringify($json.analysis.planAnomalies, null, 2) }}\n\n## Regression Model (on completed revenue)\n- Slope: {{ $json.analysis.regression.slope }}\n- R²: {{ $json.analysis.regression.r2 }}\n\n## Predictions (completed revenue)\n- Next month: ${{ $json.analysis.predictions.nextMonth }}\n- Two months out: ${{ $json.analysis.predictions.twoMonthsOut }}\n\nPlease generate the financial report."
+              "content": "=User question: {{ $json.chatInput }}\n\nDate range: {{ $json.dateRangeStart }} → {{ $json.dateRangeEnd }}\n\n## Revenue Summary\n- Completed revenue: ${{ $json.analysis.totalRevenue }}\n- Pending: ${{ $json.analysis.totalPending }}\n- Failed: ${{ $json.analysis.totalFailed }}\n- Failure rate: {{ $json.analysis.failureRate }}%\n- Top plan: {{ $json.analysis.topPlan ? $json.analysis.topPlan.plan + ' ($' + $json.analysis.topPlan.revenue + ')' : 'N/A' }}\n- Top country: {{ $json.analysis.topCountry ? $json.analysis.topCountry.country + ' ($' + $json.analysis.topCountry.revenue + ')' : 'N/A' }}\n- Trend: {{ $json.analysis.trendDirection }} ({{ $json.analysis.latestMoMGrowth }}% MoM)\n\n## Plan & Payment Method Breakdown\n{{ JSON.stringify($json.planBreakdown, null, 2) }}\n\n## Monthly Trends\n{{ JSON.stringify($json.trends, null, 2) }}\n\n## Revenue by Country & Plan\n{{ JSON.stringify($json.byCountry, null, 2) }}\n\n## Plan Anomalies (failure rate > 20%)\n{{ JSON.stringify($json.analysis.planAnomalies, null, 2) }}\n\n## Regression (on completed revenue)\n- Slope: {{ $json.analysis.regression.slope }}, R²: {{ $json.analysis.regression.r2 }}\n\n## Predictions\n- Next month: ${{ $json.analysis.predictions.nextMonth }}\n- Two months out: ${{ $json.analysis.predictions.twoMonthsOut }}\n\nPlease generate the financial report."
             }
           ]
         },
-        "options": {
-          "temperature": 0.3,
-          "maxTokens": 2000
-        }
+        "options": { "temperature": 0.3, "maxTokens": 2000 }
       },
       "id": "openai-report",
       "name": "Generate Report (GPT-4o)",
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.4,
-      "position": [1220, 380],
+      "position": [1420, 380],
       "credentials": {
-        "openAiApi": {
-          "id": "openai-cred",
-          "name": "OpenAI API"
-        }
+        "openAiApi": { "id": "openai-cred", "name": "OpenAI API" }
       }
     },
     {
       "parameters": {
-        "jsCode": "const reportContent = $input.first().json.message.content;\nconst ctx           = $('Compute Analysis & Predictions').first().json;\nconst reportId      = 'RPT-' + Date.now();\n\nreturn [{\n  json: {\n    reportId,\n    generatedAt:    new Date().toISOString(),\n    chatInput:      ctx.chatInput,\n    dateRangeStart: ctx.dateRangeStart,\n    dateRangeEnd:   ctx.dateRangeEnd,\n    reportContent,\n    analysisSummary: ctx.analysis\n  }\n}];"
+        "jsCode": "const reportContent = $input.first().json.message.content;\nconst ctx = $('Compute Analysis & Predictions').first().json;\nreturn [{\n  json: {\n    reportId:       'RPT-' + Date.now(),\n    generatedAt:    new Date().toISOString(),\n    chatInput:      ctx.chatInput,\n    dateRangeStart: ctx.dateRangeStart,\n    dateRangeEnd:   ctx.dateRangeEnd,\n    reportContent,\n    analysisSummary: ctx.analysis\n  }\n}];"
       },
       "id": "format-report",
       "name": "Format Report Output",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1460, 380]
+      "position": [1660, 380]
     },
     {
       "parameters": {
@@ -166,24 +157,21 @@
       "name": "Save Report to Supabase",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [1700, 240],
+      "position": [1900, 240],
       "credentials": {
-        "postgres": {
-          "id": "supabase-postgres-cred",
-          "name": "Supabase PostgreSQL"
-        }
+        "postgres": { "id": "supabase-postgres-cred", "name": "Supabase PostgreSQL" }
       },
       "continueOnFail": true
     },
     {
       "parameters": {
-        "jsCode": "// Return the Markdown report as the chat reply.\nreturn [{\n  json: {\n    output: $('Format Report Output').first().json.reportContent\n  }\n}];"
+        "jsCode": "return [{ json: { output: $('Format Report Output').first().json.reportContent } }];"
       },
       "id": "chat-reply",
       "name": "Chat Reply",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1700, 500]
+      "position": [1900, 500]
     }
   ],
   "connections": {
@@ -198,16 +186,13 @@
         { "node": "Supabase - Customer Revenue by Country", "type": "main", "index": 0 }
       ]]
     },
-    "Supabase - Daily Aggregates":            { "main": [[{ "node": "Compute Analysis & Predictions", "type": "main", "index": 0 }]] },
-    "Supabase - Plan & Method Breakdown":     { "main": [[{ "node": "Compute Analysis & Predictions", "type": "main", "index": 0 }]] },
-    "Supabase - Monthly Trends":              { "main": [[{ "node": "Compute Analysis & Predictions", "type": "main", "index": 0 }]] },
-    "Supabase - Customer Revenue by Country": { "main": [[{ "node": "Compute Analysis & Predictions", "type": "main", "index": 0 }]] },
-    "Compute Analysis & Predictions": {
-      "main": [[{ "node": "Generate Report (GPT-4o)", "type": "main", "index": 0 }]]
-    },
-    "Generate Report (GPT-4o)": {
-      "main": [[{ "node": "Format Report Output", "type": "main", "index": 0 }]]
-    },
+    "Supabase - Daily Aggregates":            { "main": [[{ "node": "Wait for All Queries", "type": "main", "index": 0 }]] },
+    "Supabase - Plan & Method Breakdown":     { "main": [[{ "node": "Wait for All Queries", "type": "main", "index": 1 }]] },
+    "Supabase - Monthly Trends":              { "main": [[{ "node": "Wait for All Queries", "type": "main", "index": 2 }]] },
+    "Supabase - Customer Revenue by Country": { "main": [[{ "node": "Wait for All Queries", "type": "main", "index": 3 }]] },
+    "Wait for All Queries":       { "main": [[{ "node": "Compute Analysis & Predictions", "type": "main", "index": 0 }]] },
+    "Compute Analysis & Predictions": { "main": [[{ "node": "Generate Report (GPT-4o)", "type": "main", "index": 0 }]] },
+    "Generate Report (GPT-4o)":   { "main": [[{ "node": "Format Report Output", "type": "main", "index": 0 }]] },
     "Format Report Output": {
       "main": [[
         { "node": "Save Report to Supabase", "type": "main", "index": 0 },
