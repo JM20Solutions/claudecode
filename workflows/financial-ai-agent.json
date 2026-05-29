@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const chatInput = $input.first().json.chatInput || '';\nconst dates = chatInput.match(/(\\d{4}-\\d{2}-\\d{2})/g) || [];\nconst today = new Date();\nconst ago90 = new Date(today);\nago90.setDate(today.getDate() - 90);\nreturn [{\n  json: {\n    chatInput,\n    dateRangeStart: dates[0] || ago90.toISOString().split('T')[0],\n    dateRangeEnd:   dates[1] || today.toISOString().split('T')[0]\n  }\n}];"
+        "jsCode": "const chatInput = $input.first().json.chatInput || '';\nconst dates = chatInput.match(/(\\d{4}-\\d{2}-\\d{2})/g) || [];\n\n// Default: from 2024-01-01 to today, covering all historical data\nconst today = new Date();\nconst defaultStart = '2024-01-01';\nconst defaultEnd   = today.toISOString().split('T')[0];\n\nreturn [{\n  json: {\n    chatInput,\n    dateRangeStart: dates[0] || defaultStart,\n    dateRangeEnd:   dates[1] || defaultEnd\n  }\n}];"
       },
       "id": "7c4e9e11-5158-4f8b-9fb6-8284364591ae",
       "name": "Parse Chat Input",
