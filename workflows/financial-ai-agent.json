@@ -2,9 +2,7 @@
   "name": "Financial AI Agent - Supabase Analysis & Trend Prediction",
   "nodes": [
     {
-      "parameters": {
-        "options": {}
-      },
+      "parameters": { "options": {} },
       "id": "f9211168-9160-4407-8c73-d36af483a471",
       "name": "When chat message received",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
@@ -14,7 +12,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const chatInput = $input.first().json.chatInput || '';\nconst dates = chatInput.match(/(\\d{4}-\\d{2}-\\d{2})/g) || [];\n\n// Default: from 2024-01-01 to today, covering all historical data\nconst today = new Date();\nconst defaultStart = '2024-01-01';\nconst defaultEnd   = today.toISOString().split('T')[0];\n\nreturn [{\n  json: {\n    chatInput,\n    dateRangeStart: dates[0] || defaultStart,\n    dateRangeEnd:   dates[1] || defaultEnd\n  }\n}];"
+        "jsCode": "const chatInput = $input.first().json.chatInput || '';\nconst dates = chatInput.match(/(\\d{4}-\\d{2}-\\d{2})/g) || [];\nconst today = new Date().toISOString().split('T')[0];\nreturn [{\n  json: {\n    chatInput,\n    dateRangeStart: dates[0] || '2024-01-01',\n    dateRangeEnd:   dates[1] || today\n  }\n}];"
       },
       "id": "7c4e9e11-5158-4f8b-9fb6-8284364591ae",
       "name": "Parse Chat Input",
@@ -25,7 +23,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT\n  date_trunc('day', payment_date)::date AS period,\n  payment_status,\n  SUM(amount)   AS total_amount,\n  COUNT(*)      AS transaction_count,\n  AVG(amount)   AS avg_amount,\n  MIN(amount)   AS min_amount,\n  MAX(amount)   AS max_amount\nFROM payments\nWHERE payment_date >= '{{ $('Parse Chat Input').first().json.dateRangeStart }}'::date\n  AND payment_date <  '{{ $('Parse Chat Input').first().json.dateRangeEnd }}'::date + INTERVAL '1 day'\nGROUP BY 1, 2\nORDER BY 1 ASC, total_amount DESC;",
+        "query": "={{ `SELECT date_trunc('day', payment_date)::date AS period, payment_status, SUM(amount) AS total_amount, COUNT(*) AS transaction_count, AVG(amount) AS avg_amount, MIN(amount) AS min_amount, MAX(amount) AS max_amount FROM payments WHERE payment_date >= '${$('Parse Chat Input').first().json.dateRangeStart}'::date AND payment_date < '${$('Parse Chat Input').first().json.dateRangeEnd}'::date + INTERVAL '1 day' GROUP BY 1, 2 ORDER BY 1 ASC, total_amount DESC;` }}",
         "options": {}
       },
       "id": "ffaea9a1-5a1a-4d29-9d8d-b8ffa5c41941",
@@ -34,65 +32,93 @@
       "typeVersion": 2.5,
       "position": [-1904, 144],
       "credentials": {
-        "postgres": {
-          "id": "Kb7yeqMgUF4ptbKg",
-          "name": "postgres claude code"
-        }
+        "postgres": { "id": "Kb7yeqMgUF4ptbKg", "name": "postgres claude code" }
       }
     },
     {
       "parameters": {
+        "jsCode": "return [{ json: {} }];"
+      },
+      "id": "reduce-1",
+      "name": "Reduce to 1 Item (1)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-1680, 144]
+    },
+    {
+      "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT\n  p.plan,\n  p.payment_method,\n  p.payment_status,\n  p.currency,\n  COUNT(DISTINCT p.customer_id) AS unique_customers,\n  SUM(p.amount)                 AS total_amount,\n  COUNT(*)                      AS transaction_count,\n  AVG(p.amount)                 AS avg_amount,\n  STDDEV(p.amount)              AS stddev_amount\nFROM payments p\nWHERE p.payment_date >= '{{ $('Parse Chat Input').first().json.dateRangeStart }}'::date\n  AND p.payment_date <  '{{ $('Parse Chat Input').first().json.dateRangeEnd }}'::date + INTERVAL '1 day'\nGROUP BY 1, 2, 3, 4\nORDER BY total_amount DESC;",
+        "query": "={{ `SELECT p.plan, p.payment_method, p.payment_status, p.currency, COUNT(DISTINCT p.customer_id) AS unique_customers, SUM(p.amount) AS total_amount, COUNT(*) AS transaction_count, AVG(p.amount) AS avg_amount, STDDEV(p.amount) AS stddev_amount FROM payments p WHERE p.payment_date >= '${$('Parse Chat Input').first().json.dateRangeStart}'::date AND p.payment_date < '${$('Parse Chat Input').first().json.dateRangeEnd}'::date + INTERVAL '1 day' GROUP BY 1, 2, 3, 4 ORDER BY total_amount DESC;` }}",
         "options": {}
       },
       "id": "c2f06d9d-3b91-4828-87b2-051e6f593c2b",
       "name": "Supabase - Plan & Method Breakdown",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [-1680, 144],
+      "position": [-1456, 144],
       "credentials": {
-        "postgres": {
-          "id": "Kb7yeqMgUF4ptbKg",
-          "name": "postgres claude code"
-        }
+        "postgres": { "id": "Kb7yeqMgUF4ptbKg", "name": "postgres claude code" }
       }
     },
     {
       "parameters": {
+        "jsCode": "return [{ json: {} }];"
+      },
+      "id": "reduce-2",
+      "name": "Reduce to 1 Item (2)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-1232, 144]
+    },
+    {
+      "parameters": {
         "operation": "executeQuery",
-        "query": "WITH monthly AS (\n  SELECT\n    date_trunc('month', payment_date) AS month,\n    SUM(amount)                       AS monthly_total,\n    COUNT(DISTINCT customer_id)       AS unique_customers,\n    SUM(CASE WHEN payment_status = 'completed' THEN amount ELSE 0 END) AS completed_amount,\n    SUM(CASE WHEN payment_status = 'pending'   THEN amount ELSE 0 END) AS pending_amount,\n    SUM(CASE WHEN payment_status = 'failed'    THEN amount ELSE 0 END) AS failed_amount\n  FROM payments\n  WHERE payment_date >= '{{ $('Parse Chat Input').first().json.dateRangeStart }}'::date\n    AND payment_date <  '{{ $('Parse Chat Input').first().json.dateRangeEnd }}'::date + INTERVAL '1 day'\n  GROUP BY 1\n)\nSELECT\n  month::date      AS month,\n  monthly_total,\n  unique_customers,\n  completed_amount,\n  pending_amount,\n  failed_amount,\n  LAG(monthly_total) OVER (ORDER BY month) AS prev_month_total,\n  ROUND(\n    ((monthly_total - LAG(monthly_total) OVER (ORDER BY month))\n    / NULLIF(LAG(monthly_total) OVER (ORDER BY month), 0)) * 100\n  , 2) AS mom_pct_change\nFROM monthly\nORDER BY month ASC;",
+        "query": "={{ `WITH monthly AS (SELECT date_trunc('month', payment_date) AS month, SUM(amount) AS monthly_total, COUNT(DISTINCT customer_id) AS unique_customers, SUM(CASE WHEN payment_status = 'completed' THEN amount ELSE 0 END) AS completed_amount, SUM(CASE WHEN payment_status = 'pending' THEN amount ELSE 0 END) AS pending_amount, SUM(CASE WHEN payment_status = 'failed' THEN amount ELSE 0 END) AS failed_amount FROM payments WHERE payment_date >= '${$('Parse Chat Input').first().json.dateRangeStart}'::date AND payment_date < '${$('Parse Chat Input').first().json.dateRangeEnd}'::date + INTERVAL '1 day' GROUP BY 1) SELECT month::date AS month, monthly_total, unique_customers, completed_amount, pending_amount, failed_amount, LAG(monthly_total) OVER (ORDER BY month) AS prev_month_total, ROUND(((monthly_total - LAG(monthly_total) OVER (ORDER BY month)) / NULLIF(LAG(monthly_total) OVER (ORDER BY month), 0)) * 100, 2) AS mom_pct_change FROM monthly ORDER BY month ASC;` }}",
         "options": {}
       },
       "id": "8196f28c-5111-43c6-aa64-80f57edfb187",
       "name": "Supabase - Monthly Trends",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [-1472, 144],
+      "position": [-1008, 144],
       "credentials": {
-        "postgres": {
-          "id": "Kb7yeqMgUF4ptbKg",
-          "name": "postgres claude code"
-        }
+        "postgres": { "id": "Kb7yeqMgUF4ptbKg", "name": "postgres claude code" }
       }
     },
     {
       "parameters": {
+        "jsCode": "return [{ json: {} }];"
+      },
+      "id": "reduce-3",
+      "name": "Reduce to 1 Item (3)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-784, 144]
+    },
+    {
+      "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT\n  c.country,\n  c.plan                        AS customer_plan,\n  COUNT(DISTINCT p.customer_id) AS customers,\n  SUM(p.amount)                 AS total_revenue,\n  AVG(p.amount)                 AS avg_payment,\n  COUNT(*)                      AS payment_count\nFROM payments p\nJOIN customers c ON c.customer_id = p.customer_id\nWHERE p.payment_date >= '{{ $('Parse Chat Input').first().json.dateRangeStart }}'::date\n  AND p.payment_date <  '{{ $('Parse Chat Input').first().json.dateRangeEnd }}'::date + INTERVAL '1 day'\n  AND p.payment_status = 'completed'\nGROUP BY 1, 2\nORDER BY total_revenue DESC;",
+        "query": "={{ `SELECT c.country, c.plan AS customer_plan, COUNT(DISTINCT p.customer_id) AS customers, SUM(p.amount) AS total_revenue, AVG(p.amount) AS avg_payment, COUNT(*) AS payment_count FROM payments p JOIN customers c ON c.customer_id = p.customer_id WHERE p.payment_date >= '${$('Parse Chat Input').first().json.dateRangeStart}'::date AND p.payment_date < '${$('Parse Chat Input').first().json.dateRangeEnd}'::date + INTERVAL '1 day' AND p.payment_status = 'completed' GROUP BY 1, 2 ORDER BY total_revenue DESC;` }}",
         "options": {}
       },
       "id": "f0c59f1f-ce30-454d-bcf0-b88a27d09815",
       "name": "Supabase - Customer Revenue by Country",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [-1248, 144],
+      "position": [-560, 144],
       "credentials": {
-        "postgres": {
-          "id": "Kb7yeqMgUF4ptbKg",
-          "name": "postgres claude code"
-        }
+        "postgres": { "id": "Kb7yeqMgUF4ptbKg", "name": "postgres claude code" }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: {} }];"
+      },
+      "id": "reduce-4",
+      "name": "Reduce to 1 Item (4)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-336, 144]
     },
     {
       "parameters": {
@@ -102,7 +128,7 @@
       "name": "Compute Analysis & Predictions",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-1024, 144]
+      "position": [-112, 144]
     },
     {
       "parameters": {
@@ -112,7 +138,7 @@
       "name": "Build Prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-800, 144]
+      "position": [112, 144]
     },
     {
       "parameters": {
@@ -125,7 +151,7 @@
       "name": "AI Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
-      "position": [-592, 144]
+      "position": [336, 144]
     },
     {
       "parameters": {
@@ -135,21 +161,13 @@
       "name": "Format Report Output",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-224, 144]
+      "position": [560, 144]
     },
     {
       "parameters": {
         "operation": "insert",
-        "schema": {
-          "__rl": true,
-          "value": "public",
-          "mode": "list"
-        },
-        "table": {
-          "__rl": true,
-          "value": "financial_reports",
-          "mode": "list"
-        },
+        "schema": { "__rl": true, "value": "public", "mode": "list" },
+        "table":  { "__rl": true, "value": "financial_reports", "mode": "list" },
         "dataMode": "defineBelow",
         "valuesToSend": {
           "values": [
@@ -162,20 +180,15 @@
             { "column": "generated_at",     "value": "={{ $json.generatedAt }}" }
           ]
         },
-        "options": {
-          "skipOnConflict": true
-        }
+        "options": { "skipOnConflict": true }
       },
       "id": "cf3d58ad-dd5d-46d6-9502-00693d38e450",
       "name": "Save Report to Supabase",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [80, 16],
+      "position": [784, 16],
       "credentials": {
-        "postgres": {
-          "id": "Kb7yeqMgUF4ptbKg",
-          "name": "postgres claude code"
-        }
+        "postgres": { "id": "Kb7yeqMgUF4ptbKg", "name": "postgres claude code" }
       },
       "continueOnFail": true
     },
@@ -187,58 +200,39 @@
       "name": "Chat Reply",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [112, 288]
+      "position": [784, 288]
     },
     {
-      "parameters": {
-        "options": {}
-      },
+      "parameters": { "options": {} },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
-      "position": [-736, 352],
+      "position": [272, 352],
       "id": "fe786497-f535-41dc-be94-1679eb713cad",
       "name": "Google Gemini Chat Model",
       "credentials": {
-        "googlePalmApi": {
-          "id": "cxVbQMqeMVtWTDrU",
-          "name": "Google Gemini(PaLM) Api account 2"
-        }
+        "googlePalmApi": { "id": "cxVbQMqeMVtWTDrU", "name": "Google Gemini(PaLM) Api account 2" }
       }
     }
   ],
   "pinData": {},
   "connections": {
-    "When chat message received": {
-      "main": [[{ "node": "Parse Chat Input", "type": "main", "index": 0 }]]
-    },
-    "Parse Chat Input": {
-      "main": [[{ "node": "Supabase - Daily Aggregates", "type": "main", "index": 0 }]]
-    },
-    "Supabase - Daily Aggregates": {
-      "main": [[{ "node": "Supabase - Plan & Method Breakdown", "type": "main", "index": 0 }]]
-    },
-    "Supabase - Plan & Method Breakdown": {
-      "main": [[{ "node": "Supabase - Monthly Trends", "type": "main", "index": 0 }]]
-    },
-    "Supabase - Monthly Trends": {
-      "main": [[{ "node": "Supabase - Customer Revenue by Country", "type": "main", "index": 0 }]]
-    },
-    "Supabase - Customer Revenue by Country": {
-      "main": [[{ "node": "Compute Analysis & Predictions", "type": "main", "index": 0 }]]
-    },
-    "Compute Analysis & Predictions": {
-      "main": [[{ "node": "Build Prompt", "type": "main", "index": 0 }]]
-    },
-    "Build Prompt": {
-      "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]
-    },
-    "AI Agent": {
-      "main": [[{ "node": "Format Report Output", "type": "main", "index": 0 }]]
-    },
+    "When chat message received":             { "main": [[{ "node": "Parse Chat Input",                     "type": "main", "index": 0 }]] },
+    "Parse Chat Input":                       { "main": [[{ "node": "Supabase - Daily Aggregates",           "type": "main", "index": 0 }]] },
+    "Supabase - Daily Aggregates":            { "main": [[{ "node": "Reduce to 1 Item (1)",                  "type": "main", "index": 0 }]] },
+    "Reduce to 1 Item (1)":                   { "main": [[{ "node": "Supabase - Plan & Method Breakdown",    "type": "main", "index": 0 }]] },
+    "Supabase - Plan & Method Breakdown":     { "main": [[{ "node": "Reduce to 1 Item (2)",                  "type": "main", "index": 0 }]] },
+    "Reduce to 1 Item (2)":                   { "main": [[{ "node": "Supabase - Monthly Trends",             "type": "main", "index": 0 }]] },
+    "Supabase - Monthly Trends":              { "main": [[{ "node": "Reduce to 1 Item (3)",                  "type": "main", "index": 0 }]] },
+    "Reduce to 1 Item (3)":                   { "main": [[{ "node": "Supabase - Customer Revenue by Country", "type": "main", "index": 0 }]] },
+    "Supabase - Customer Revenue by Country": { "main": [[{ "node": "Reduce to 1 Item (4)",                  "type": "main", "index": 0 }]] },
+    "Reduce to 1 Item (4)":                   { "main": [[{ "node": "Compute Analysis & Predictions",        "type": "main", "index": 0 }]] },
+    "Compute Analysis & Predictions":         { "main": [[{ "node": "Build Prompt",                          "type": "main", "index": 0 }]] },
+    "Build Prompt":                           { "main": [[{ "node": "AI Agent",                              "type": "main", "index": 0 }]] },
+    "AI Agent":                               { "main": [[{ "node": "Format Report Output",                  "type": "main", "index": 0 }]] },
     "Format Report Output": {
       "main": [[
         { "node": "Save Report to Supabase", "type": "main", "index": 0 },
-        { "node": "Chat Reply", "type": "main", "index": 0 }
+        { "node": "Chat Reply",              "type": "main", "index": 0 }
       ]]
     },
     "Google Gemini Chat Model": {
