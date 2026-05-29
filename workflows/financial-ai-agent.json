@@ -1,0 +1,477 @@
+{
+  "name": "Financial AI Agent - Supabase Analysis & Trend Prediction",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "financial-query",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "financial-agent-webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "user-query",
+              "name": "userQuery",
+              "value": "={{ $json.body.query }}",
+              "type": "string"
+            },
+            {
+              "id": "date-range-start",
+              "name": "dateRangeStart",
+              "value": "={{ $json.body.dateRangeStart ?? new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "date-range-end",
+              "name": "dateRangeEnd",
+              "value": "={{ $json.body.dateRangeEnd ?? new Date().toISOString().split('T')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "table-name",
+              "name": "tableName",
+              "value": "={{ $json.body.tableName ?? 'financial_transactions' }}",
+              "type": "string"
+            },
+            {
+              "id": "report-type",
+              "name": "reportType",
+              "value": "={{ $json.body.reportType ?? 'full' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-input-vars",
+      "name": "Set Input Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  date_trunc('day', created_at) AS period,\n  category,\n  SUM(amount) AS total_amount,\n  COUNT(*) AS transaction_count,\n  AVG(amount) AS avg_amount,\n  MIN(amount) AS min_amount,\n  MAX(amount) AS max_amount\nFROM {{ $json.tableName }}\nWHERE created_at BETWEEN '{{ $json.dateRangeStart }}' AND '{{ $json.dateRangeEnd }}'\nGROUP BY date_trunc('day', created_at), category\nORDER BY period ASC, total_amount DESC;",
+        "options": {}
+      },
+      "id": "supabase-fetch-aggregates",
+      "name": "Supabase - Fetch Aggregated Data",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [700, 200],
+      "credentials": {
+        "postgres": {
+          "id": "supabase-postgres-cred",
+          "name": "Supabase PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  category,\n  SUM(amount) AS total_amount,\n  COUNT(*) AS transaction_count,\n  AVG(amount) AS avg_amount,\n  STDDEV(amount) AS stddev_amount,\n  PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount) AS median_amount\nFROM {{ $('Set Input Variables').item.json.tableName }}\nWHERE created_at BETWEEN '{{ $('Set Input Variables').item.json.dateRangeStart }}' AND '{{ $('Set Input Variables').item.json.dateRangeEnd }}'\nGROUP BY category\nORDER BY total_amount DESC;",
+        "options": {}
+      },
+      "id": "supabase-fetch-by-category",
+      "name": "Supabase - Category Breakdown",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [700, 380],
+      "credentials": {
+        "postgres": {
+          "id": "supabase-postgres-cred",
+          "name": "Supabase PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH monthly AS (\n  SELECT\n    date_trunc('month', created_at) AS month,\n    SUM(amount) AS monthly_total\n  FROM {{ $('Set Input Variables').item.json.tableName }}\n  WHERE created_at BETWEEN '{{ $('Set Input Variables').item.json.dateRangeStart }}' AND '{{ $('Set Input Variables').item.json.dateRangeEnd }}'\n  GROUP BY date_trunc('month', created_at)\n)\nSELECT\n  month,\n  monthly_total,\n  LAG(monthly_total) OVER (ORDER BY month) AS prev_month_total,\n  ROUND(\n    ((monthly_total - LAG(monthly_total) OVER (ORDER BY month))\n    / NULLIF(LAG(monthly_total) OVER (ORDER BY month), 0)) * 100, 2\n  ) AS month_over_month_pct_change\nFROM monthly\nORDER BY month ASC;",
+        "options": {}
+      },
+      "id": "supabase-fetch-trends",
+      "name": "Supabase - Monthly Trend Data",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [700, 560],
+      "credentials": {
+        "postgres": {
+          "id": "supabase-postgres-cred",
+          "name": "Supabase PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge-data",
+      "name": "Merge All Data",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [940, 380]
+    },
+    {
+      "parameters": {
+        "jsCode": "const aggregates = $('Supabase - Fetch Aggregated Data').all().map(i => i.json);\nconst categories = $('Supabase - Category Breakdown').all().map(i => i.json);\nconst trends = $('Supabase - Monthly Trend Data').all().map(i => i.json);\n\n// Compute simple linear regression for trend prediction\nfunction linearRegression(data) {\n  const n = data.length;\n  if (n < 2) return { slope: 0, intercept: data[0]?.monthly_total || 0, r2: 0 };\n\n  const xVals = data.map((_, i) => i);\n  const yVals = data.map(d => parseFloat(d.monthly_total) || 0);\n\n  const xMean = xVals.reduce((a, b) => a + b, 0) / n;\n  const yMean = yVals.reduce((a, b) => a + b, 0) / n;\n\n  const numerator = xVals.reduce((sum, x, i) => sum + (x - xMean) * (yVals[i] - yMean), 0);\n  const denominator = xVals.reduce((sum, x) => sum + Math.pow(x - xMean, 2), 0);\n\n  const slope = denominator !== 0 ? numerator / denominator : 0;\n  const intercept = yMean - slope * xMean;\n\n  const ssRes = yVals.reduce((sum, y, i) => sum + Math.pow(y - (slope * i + intercept), 2), 0);\n  const ssTot = yVals.reduce((sum, y) => sum + Math.pow(y - yMean, 2), 0);\n  const r2 = ssTot !== 0 ? 1 - ssRes / ssTot : 1;\n\n  return { slope: Math.round(slope * 100) / 100, intercept: Math.round(intercept * 100) / 100, r2: Math.round(r2 * 1000) / 1000 };\n}\n\nconst regression = linearRegression(trends);\nconst nextMonthPrediction = regression.slope * trends.length + regression.intercept;\nconst twoMonthPrediction = regression.slope * (trends.length + 1) + regression.intercept;\n\n// Detect anomalies (values > 2 std deviations from mean)\nconst amounts = categories.map(c => parseFloat(c.total_amount) || 0);\nconst mean = amounts.reduce((a, b) => a + b, 0) / (amounts.length || 1);\nconst stddev = Math.sqrt(amounts.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / (amounts.length || 1));\nconst anomalies = categories.filter(c => Math.abs(parseFloat(c.total_amount) - mean) > 2 * stddev);\n\n// Month-over-month trend direction\nconst latestTrend = trends[trends.length - 1];\nconst trendDirection = latestTrend?.month_over_month_pct_change > 0 ? 'upward' :\n  latestTrend?.month_over_month_pct_change < 0 ? 'downward' : 'stable';\n\nreturn [{\n  json: {\n    aggregates,\n    categories,\n    trends,\n    analysis: {\n      totalTransactions: aggregates.reduce((sum, r) => sum + parseInt(r.transaction_count || 0), 0),\n      totalAmount: Math.round(aggregates.reduce((sum, r) => sum + parseFloat(r.total_amount || 0), 0) * 100) / 100,\n      topCategory: categories[0]?.category || 'N/A',\n      topCategoryAmount: categories[0]?.total_amount || 0,\n      trendDirection,\n      latestMonthGrowth: latestTrend?.month_over_month_pct_change || 0,\n      anomalies: anomalies.map(a => ({ category: a.category, amount: a.total_amount })),\n      regression,\n      predictions: {\n        nextMonth: Math.round(nextMonthPrediction * 100) / 100,\n        twoMonthsOut: Math.round(twoMonthPrediction * 100) / 100\n      }\n    }\n  }\n}];"
+      },
+      "id": "compute-analysis",
+      "name": "Compute Analysis & Predictions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1160, 380]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an expert financial analyst AI. You receive structured financial data from a database and the user's question. Your job is to:\n1. Directly answer the user's query with precise data.\n2. Provide a concise financial analysis with key insights.\n3. Identify notable trends, risks, and anomalies.\n4. Give a clear trend prediction for the next 1-2 months based on regression analysis.\n5. Offer 2-3 actionable recommendations.\n\nFormat your response as a clean, professional financial report in Markdown. Use tables where appropriate. Be data-driven and specific."
+            },
+            {
+              "role": "user",
+              "content": "User Query: {{ $('Set Input Variables').item.json.userQuery }}\n\nDate Range: {{ $('Set Input Variables').item.json.dateRangeStart }} to {{ $('Set Input Variables').item.json.dateRangeEnd }}\n\n--- FINANCIAL DATA SUMMARY ---\n\nTotal Transactions: {{ $json.analysis.totalTransactions }}\nTotal Amount: ${{ $json.analysis.totalAmount }}\nTop Category: {{ $json.analysis.topCategory }} (${{ $json.analysis.topCategoryAmount }})\nOverall Trend Direction: {{ $json.analysis.trendDirection }}\nLatest Month-over-Month Growth: {{ $json.analysis.latestMonthGrowth }}%\n\nCategory Breakdown:\n{{ JSON.stringify($json.categories, null, 2) }}\n\nMonthly Trend Data:\n{{ JSON.stringify($json.trends, null, 2) }}\n\nAnomaly Detection (categories deviating >2 std dev from mean):\n{{ JSON.stringify($json.analysis.anomalies, null, 2) }}\n\nLinear Regression Model:\n- Slope: {{ $json.analysis.regression.slope }}\n- R² (model fit): {{ $json.analysis.regression.r2 }}\n\nTrend Predictions:\n- Next Month: ${{ $json.analysis.predictions.nextMonth }}\n- Two Months Out: ${{ $json.analysis.predictions.twoMonthsOut }}\n\nPlease generate a comprehensive financial report answering the user's query."
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.3,
+          "maxTokens": 2000
+        }
+      },
+      "id": "ai-agent",
+      "name": "AI Financial Agent (GPT-4o)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [1380, 380],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-cred",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "report-id",
+              "name": "reportId",
+              "value": "={{ 'RPT-' + Date.now() }}",
+              "type": "string"
+            },
+            {
+              "id": "generated-at",
+              "name": "generatedAt",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            },
+            {
+              "id": "report-content",
+              "name": "reportContent",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "analysis-summary",
+              "name": "analysisSummary",
+              "value": "={{ $('Compute Analysis & Predictions').item.json.analysis }}",
+              "type": "object"
+            },
+            {
+              "id": "user-query-echo",
+              "name": "userQuery",
+              "value": "={{ $('Set Input Variables').item.json.userQuery }}",
+              "type": "string"
+            },
+            {
+              "id": "date-range",
+              "name": "dateRange",
+              "value": "={{ $('Set Input Variables').item.json.dateRangeStart + ' to ' + $('Set Input Variables').item.json.dateRangeEnd }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-report",
+      "name": "Format Final Report",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1600, 380]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO financial_reports (report_id, user_query, date_range_start, date_range_end, report_content, analysis_summary, generated_at)\nVALUES (\n  '{{ $json.reportId }}',\n  '{{ $json.userQuery.replace(/'/g, \"''\") }}',\n  '{{ $('Set Input Variables').item.json.dateRangeStart }}',\n  '{{ $('Set Input Variables').item.json.dateRangeEnd }}',\n  '{{ $json.reportContent.replace(/'/g, \"''\") }}',\n  '{{ JSON.stringify($json.analysisSummary).replace(/'/g, \"''\") }}'::jsonb,\n  '{{ $json.generatedAt }}'\n)\nRETURNING id;",
+        "options": {}
+      },
+      "id": "save-report",
+      "name": "Save Report to Supabase",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1820, 300],
+      "credentials": {
+        "postgres": {
+          "id": "supabase-postgres-cred",
+          "name": "Supabase PostgreSQL"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"reportId\": \"{{ $('Format Final Report').item.json.reportId }}\",\n  \"generatedAt\": \"{{ $('Format Final Report').item.json.generatedAt }}\",\n  \"dateRange\": \"{{ $('Format Final Report').item.json.dateRange }}\",\n  \"userQuery\": \"{{ $('Format Final Report').item.json.userQuery }}\",\n  \"report\": {{ JSON.stringify($('Format Final Report').item.json.reportContent) }},\n  \"analysisSummary\": {{ JSON.stringify($('Format Final Report').item.json.analysisSummary) }}\n}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-to-webhook",
+      "name": "Send Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2040, 380]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-query",
+              "leftValue": "={{ $json.userQuery }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "validate-input",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [460, 520]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": false, \"error\": \"Missing required field: query. Please provide a query in the request body.\" }",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "error-response",
+      "name": "Error - Missing Query",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [700, 620]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Input Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Input Variables": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Supabase - Fetch Aggregated Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Supabase - Category Breakdown",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Supabase - Monthly Trend Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error - Missing Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase - Fetch Aggregated Data": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase - Category Breakdown": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Supabase - Monthly Trend Data": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge All Data": {
+      "main": [
+        [
+          {
+            "node": "Compute Analysis & Predictions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Analysis & Predictions": {
+      "main": [
+        [
+          {
+            "node": "AI Financial Agent (GPT-4o)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Financial Agent (GPT-4o)": {
+      "main": [
+        [
+          {
+            "node": "Format Final Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Final Report": {
+      "main": [
+        [
+          {
+            "node": "Save Report to Supabase",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    { "name": "finance" },
+    { "name": "ai-agent" },
+    { "name": "supabase" },
+    { "name": "reporting" }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2026-05-29T00:00:00.000Z",
+  "versionId": "1.0.0",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "n8nVersion": "1.94.1"
+  },
+  "__readme__": {
+    "title": "Financial AI Agent - Supabase Analysis & Trend Prediction",
+    "description": "An AI-powered n8n workflow that queries a Supabase (PostgreSQL) financial table, performs statistical analysis, predicts future trends using linear regression, and generates a natural-language financial report via GPT-4o.",
+    "setupInstructions": [
+      "1. CREDENTIALS - Configure two credentials in n8n:",
+      "   a) 'Supabase PostgreSQL' - Postgres credential pointing to your Supabase project DB URL (port 5432 or 6543 for pooled).",
+      "   b) 'OpenAI API' - Your OpenAI API key with access to gpt-4o.",
+      "2. SUPABASE TABLES - Ensure these tables exist:",
+      "   a) financial_transactions (id, created_at TIMESTAMPTZ, amount NUMERIC, category TEXT, description TEXT, ...)",
+      "   b) financial_reports (id SERIAL, report_id TEXT, user_query TEXT, date_range_start DATE, date_range_end DATE, report_content TEXT, analysis_summary JSONB, generated_at TIMESTAMPTZ)",
+      "3. ACTIVATE - Toggle the workflow active to enable the webhook.",
+      "4. CALL THE WEBHOOK - POST to your n8n webhook URL:",
+      "   POST /webhook/financial-query",
+      "   Body: { \"query\": \"What are my top spending categories this quarter?\", \"dateRangeStart\": \"2026-01-01\", \"dateRangeEnd\": \"2026-03-31\", \"tableName\": \"financial_transactions\", \"reportType\": \"full\" }",
+      "5. RESPONSE - You get back a JSON with the full markdown report, analysis summary, predictions, and a saved reportId."
+    ]
+  }
+}
