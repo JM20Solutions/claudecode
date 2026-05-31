@@ -24,7 +24,7 @@
           },
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
-          },
+          }
         }
       }
     }
@@ -32,172 +32,230 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
-
-    /* ── Print styles ── */
-    @media print {
-      body { background: white !important; }
-      #sidebar, #print-btn, #api-bar, #hero-bar { display: none !important; }
-      #output-panel {
-        box-shadow: none !important;
-        border: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-      .no-print { display: none !important; }
-      .print-break { page-break-before: always; }
+    /* ── DARK THEME VARIABLES ── */
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #111118;
+      --surface2:  #18181f;
+      --surface3:  #1f1f28;
+      --border:    #2a2a38;
+      --border2:   #32323f;
+      --text:      #e8e8f0;
+      --text-muted:#8888a0;
+      --text-dim:  #55556a;
+      --accent:    #6366f1;
+      --accent2:   #818cf8;
+      --accent-bg: rgba(99,102,241,0.12);
+      --accent-border: rgba(99,102,241,0.3);
+      --green:     #10b981;
+      --amber:     #f59e0b;
+      --rose:      #f43f5e;
+      --violet:    #8b5cf6;
+      --blue:      #3b82f6;
+      --emerald:   #10b981;
     }
 
-    /* ── Loader spinner ── */
+    * { box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    @media print {
+      body { background: white !important; color: #111 !important; }
+      * { color: inherit !important; background: transparent !important; border-color: #ccc !important; }
+      #sidebar, #api-bar, #hero-bar { display: none !important; }
+      .no-print { display: none !important; }
+    }
+
     .spinner {
-      width: 40px; height: 40px;
-      border: 4px solid #e2e8f0;
-      border-top-color: #4f72f5;
+      width: 36px; height: 36px;
+      border: 4px solid var(--border2);
+      border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Section reveal animation ── */
     .section-card {
       opacity: 0;
       transform: translateY(12px);
       animation: fadeUp 0.4s ease forwards;
     }
-    @keyframes fadeUp {
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 
-    /* ── Stagger delays ── */
     .delay-1 { animation-delay: 0.05s; }
     .delay-2 { animation-delay: 0.12s; }
     .delay-3 { animation-delay: 0.19s; }
     .delay-4 { animation-delay: 0.26s; }
     .delay-5 { animation-delay: 0.33s; }
 
-    /* ── Timestamp badge ── */
     .ts-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: #e0eaff;
-      color: #2c42cc;
-      font-weight: 600;
-      font-size: 0.72rem;
-      padding: 2px 8px;
-      border-radius: 999px;
-      letter-spacing: 0.03em;
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--accent-bg); color: var(--accent2);
+      border: 1px solid var(--accent-border);
+      font-weight: 600; font-size: 0.72rem;
+      padding: 2px 8px; border-radius: 999px; letter-spacing: 0.03em;
     }
 
-    /* ── Language pill ── */
     .lang-pill {
-      background: linear-gradient(135deg, #f0f4ff 0%, #e0eaff 100%);
-      border: 1px solid #c0d2fe;
-      border-radius: 10px;
-      padding: 12px 16px;
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      border-radius: 10px; padding: 12px 16px;
     }
 
-    /* ── Pitfall item ── */
     .pitfall-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px dashed #e2e8f0;
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0; border-bottom: 1px dashed var(--border);
     }
     .pitfall-row:last-child { border-bottom: none; }
 
-    /* ── Role-play card ── */
     .roleplay-card {
-      background: linear-gradient(135deg, #fafbff 0%, #f0f4ff 100%);
-      border: 1px solid #c0d2fe;
-      border-radius: 12px;
-      padding: 16px 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 12px; padding: 16px 20px;
     }
 
-    /* ── Textarea focus ring ── */
+    /* ── Dark form inputs ── */
+    input, select, textarea {
+      background: var(--surface3) !important;
+      color: var(--text) !important;
+      border-color: var(--border) !important;
+    }
+    input::placeholder, textarea::placeholder { color: var(--text-dim) !important; }
+    select option { background: var(--surface3); color: var(--text); }
+
     textarea:focus, input:focus, select:focus {
       outline: none;
-      box-shadow: 0 0 0 3px rgba(79,114,245,0.2);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.25) !important;
+      border-color: var(--accent) !important;
     }
+
+    /* ── Topic card (dark) ── */
+    .topic-card {
+      cursor: pointer;
+      border: 2px solid var(--border2);
+      border-radius: 14px;
+      padding: 16px 18px;
+      background: var(--surface2);
+      transition: all 0.18s ease;
+    }
+    .topic-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(99,102,241,0.2);
+      transform: translateY(-2px);
+    }
+    .topic-card.selected {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+      box-shadow: 0 4px 24px rgba(99,102,241,0.3);
+    }
+
+    /* ── Step dots ── */
+    .step-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+    }
+    .step-dot.active   { background: var(--accent);  color: white; }
+    .step-dot.done     { background: var(--green);   color: white; }
+    .step-dot.inactive { background: var(--surface3); color: var(--text-muted); border: 1px solid var(--border2); }
+
+    /* ── Dark section panels ── */
+    .sec-warmup   { background: linear-gradient(135deg, #1a1208 0%, #1c1510 100%); border-color: #3a2e1a; }
+    .sec-debate   { background: linear-gradient(135deg, #0d1220 0%, #0f1428 100%); border-color: #1e2d4a; }
+    .sec-language { background: linear-gradient(135deg, #130f20 0%, #160f24 100%); border-color: #2e1d4a; }
+    .sec-roleplay { background: linear-gradient(135deg, #0a1a14 0%, #0c1c18 100%); border-color: #1a3828; }
+    .sec-pitfalls { background: linear-gradient(135deg, #1a0c10 0%, #1c0f14 100%); border-color: #3a1a22; }
+    .sec-notes    { background: var(--surface2); border-color: var(--border2); }
+
+    /* ── Dark inner cards ── */
+    .inner-card {
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px; padding: 14px 16px;
+    }
+    .inner-card-amber  { background: rgba(245,158,11,0.08);  border: 1px solid rgba(245,158,11,0.2); border-radius: 10px; padding: 14px 16px; }
+    .inner-card-blue   { background: rgba(59,130,246,0.08);  border: 1px solid rgba(59,130,246,0.2); border-radius: 10px; padding: 14px 16px; }
+    .inner-card-violet { background: rgba(139,92,246,0.08);  border: 1px solid rgba(139,92,246,0.2); border-radius: 10px; padding: 14px 16px; }
+    .inner-card-emerald{ background: rgba(16,185,129,0.08);  border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; padding: 14px 16px; }
+    .inner-card-rose   { background: rgba(244,63,94,0.08);   border: 1px solid rgba(244,63,94,0.2); border-radius: 10px; padding: 14px 16px; }
+    .inner-card-white  { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .inner-card-yellow { background: rgba(234,179,8,0.08);   border: 1px solid rgba(234,179,8,0.2); border-radius: 10px; padding: 14px 16px; }
+    .inner-card-slate  { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+<body class="font-sans min-h-screen" style="background:var(--bg);color:var(--text)">
 
-<!-- ══ TOP HERO BAR ══════════════════════════════════════════════════ -->
-<div id="hero-bar" class="bg-gradient-to-r from-brand-700 via-brand-600 to-indigo-500 text-white shadow-lg">
+<!-- HERO BAR -->
+<div id="hero-bar" style="background:linear-gradient(90deg,#09090f 0%,#12121e 60%,#0d0d1a 100%);border-bottom:1px solid var(--border)">
   <div class="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between flex-wrap gap-3">
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center text-lg font-bold shadow">
-        🧠
-      </div>
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold shadow" style="background:var(--accent-bg);border:1px solid var(--accent-border)">🧠</div>
       <div>
-        <h1 class="text-lg font-bold leading-tight">AI English Lesson Planner</h1>
-        <p class="text-brand-100 text-xs">Tailored for Adult Spanish Learners · B1 → C2</p>
+        <h1 class="text-lg font-bold leading-tight" style="color:var(--text)">AI English Lesson Planner</h1>
+        <p class="text-xs" style="color:var(--text-muted)">Tailored for Adult Spanish Learners · B1 → C2</p>
       </div>
     </div>
-    <div class="flex items-center gap-2 text-sm">
-      <span class="bg-white/20 rounded-full px-3 py-1 text-xs font-medium">Pedagogical Framework v2</span>
-      <a href="#" onclick="window.print(); return false;"
-         id="print-btn"
-         class="bg-white text-brand-700 font-semibold px-4 py-1.5 rounded-full text-xs hover:bg-brand-50 transition shadow no-print">
+    <div class="flex items-center gap-2 text-sm no-print">
+      <span class="rounded-full px-3 py-1 text-xs font-medium" style="background:var(--accent-bg);color:var(--accent2);border:1px solid var(--accent-border)">Pedagogical Framework v2</span>
+      <button onclick="window.print()"
+              class="font-semibold px-4 py-1.5 rounded-full text-xs transition shadow"
+              style="background:var(--accent);color:white">
         🖨️ Print / Export PDF
-      </a>
+      </button>
     </div>
   </div>
 </div>
 
-<!-- ══ API BAR ═══════════════════════════════════════════════════════ -->
-<div id="api-bar" class="bg-slate-800 text-slate-200 text-xs no-print">
+<!-- API BAR -->
+<div id="api-bar" class="text-xs no-print" style="background:var(--surface);border-bottom:1px solid var(--border)">
   <div class="max-w-screen-2xl mx-auto px-6 py-2 flex items-center gap-4 flex-wrap">
-    <span class="font-semibold text-slate-400 uppercase tracking-wide text-[10px]">Live API</span>
-    <div class="flex items-center gap-2 flex-1 min-w-0">
-      <select id="api-provider" class="bg-slate-700 text-slate-200 rounded px-2 py-1 text-xs border border-slate-600 focus:ring-0">
-        <option value="openai">OpenAI (GPT-4o)</option>
-        <option value="anthropic">Anthropic (Claude)</option>
-      </select>
-      <input id="api-key" type="password" placeholder="Paste API key here for live generation…"
-             class="bg-slate-700 text-slate-100 rounded px-3 py-1 text-xs border border-slate-600 flex-1 min-w-0 placeholder-slate-500" />
-      <span id="api-status" class="text-slate-500 italic whitespace-nowrap">Demo mode active</span>
-    </div>
-    <!-- Demo toggle -->
-    <label class="flex items-center gap-2 cursor-pointer select-none">
-      <span class="text-slate-400">Demo</span>
-      <div class="relative">
-        <input type="checkbox" id="demo-toggle" class="sr-only" checked />
-        <div class="w-9 h-5 bg-brand-500 rounded-full shadow-inner"></div>
-        <div id="toggle-dot" class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 translate-x-4"></div>
-      </div>
-      <span class="text-slate-400">Live</span>
-    </label>
+    <span class="font-semibold uppercase tracking-wide text-[10px]" style="color:var(--text-dim)">API</span>
+    <select id="api-provider" class="rounded px-2 py-1 text-xs" style="background:var(--surface3);color:var(--text);border:1px solid var(--border2)">
+      <option value="openai">OpenAI (GPT-4o)</option>
+      <option value="anthropic">Anthropic (Claude)</option>
+    </select>
+    <input id="api-key" type="password" placeholder="Paste your API key here…"
+           class="rounded px-3 py-1 text-xs flex-1 min-w-0" style="background:var(--surface3);color:var(--text);border:1px solid var(--border2)" />
+    <span id="api-status" class="italic whitespace-nowrap text-[11px]" style="color:var(--text-dim)">No key — demo mode active</span>
   </div>
 </div>
 
-<!-- ══ MAIN LAYOUT ════════════════════════════════════════════════════ -->
+<!-- MAIN -->
 <div class="max-w-screen-2xl mx-auto px-4 py-6 flex flex-col xl:flex-row gap-6">
 
-  <!-- ── SIDEBAR / INPUT FORM ─────────────────────────────────────── -->
+  <!-- SIDEBAR -->
   <aside id="sidebar" class="xl:w-80 shrink-0 no-print">
-    <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden sticky top-6">
+    <div class="rounded-2xl overflow-hidden sticky top-6" style="background:var(--surface);border:1px solid var(--border)">
 
-      <!-- Form header -->
-      <div class="bg-gradient-to-br from-brand-600 to-indigo-500 px-6 py-5 text-white">
-        <h2 class="font-bold text-base">Lesson Parameters</h2>
-        <p class="text-brand-100 text-xs mt-0.5">Fill in the details below to generate a personalised plan.</p>
+      <!-- Header -->
+      <div class="px-6 py-5" style="background:linear-gradient(135deg,#12122a 0%,#1a1230 100%);border-bottom:1px solid var(--border)">
+        <h2 class="font-bold text-base" style="color:var(--text)">Lesson Parameters</h2>
+        <p class="text-xs mt-0.5" style="color:var(--text-muted)">Fill in the fields, get AI topic ideas, then generate your plan.</p>
       </div>
 
-      <form id="lesson-form" class="px-5 py-5 space-y-5">
+      <!-- Step indicators -->
+      <div class="px-5 pt-4 pb-2 flex items-center gap-2 no-print">
+        <div class="step-dot active" id="dot-1">1</div>
+        <div class="h-px flex-1" style="background:var(--border2)" id="line-1"></div>
+        <div class="step-dot inactive" id="dot-2">2</div>
+        <div class="h-px flex-1" style="background:var(--border2)" id="line-2"></div>
+        <div class="step-dot inactive" id="dot-3">3</div>
+        <p class="text-xs ml-1" style="color:var(--text-muted)" id="step-label">Step 1: Your details</p>
+      </div>
+
+      <form id="params-form" class="px-5 py-4 space-y-4">
 
         <!-- Level -->
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
-            Student Level
-          </label>
-          <select id="level" required
-                  class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 transition">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color:var(--text-muted)">Student Level</label>
+          <select id="level" required class="w-full rounded-lg px-3 py-2.5 text-sm transition"
+                  style="background:var(--surface3);color:var(--text);border:1px solid var(--border2)">
             <option value="">— Select level —</option>
             <option value="B1">B1 — Intermediate</option>
             <option value="B2">B2 — Upper-Intermediate</option>
@@ -206,889 +264,865 @@
           </select>
         </div>
 
-        <!-- Number of students -->
+        <!-- Students -->
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
-            Number of Students
-          </label>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color:var(--text-muted)">Number of Students</label>
           <input id="students" type="number" min="1" max="30" value="6" required
-                 class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm transition" />
-        </div>
-
-        <!-- Topic -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
-            Lesson Topic
-          </label>
-          <input id="topic" type="text" placeholder="e.g. The Future of Remote Work" required
-                 class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm transition" />
-          <div class="mt-1.5 flex flex-wrap gap-1" id="topic-chips">
-            <!-- Quick-fill chips -->
-          </div>
+                 class="w-full rounded-lg px-3 py-2.5 text-sm transition"
+                 style="background:var(--surface3);color:var(--text);border:1px solid var(--border2)" />
         </div>
 
         <!-- Duration -->
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
-            Lesson Duration
-          </label>
+          <label class="block text-xs font-semibold mb-2 uppercase tracking-wide" style="color:var(--text-muted)">Lesson Duration</label>
           <div class="flex gap-3">
             <label class="flex-1 flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="duration" value="45" class="accent-brand-600" />
-              <span class="text-sm font-medium">45 min</span>
+              <input type="radio" name="duration" value="45" class="accent-indigo-500" />
+              <span class="text-sm font-medium" style="color:var(--text)">45 min</span>
             </label>
             <label class="flex-1 flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="duration" value="60" class="accent-brand-600" checked />
-              <span class="text-sm font-medium">60 min</span>
+              <input type="radio" name="duration" value="60" class="accent-indigo-500" checked />
+              <span class="text-sm font-medium" style="color:var(--text)">60 min</span>
             </label>
           </div>
         </div>
 
-        <!-- Professional sector -->
+        <!-- Sector -->
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
-            Professional Sector
-          </label>
-          <select id="sector" required
-                  class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 transition">
-            <option value="">— Select sector —</option>
-            <option value="IT &amp; Technology">IT &amp; Technology</option>
-            <option value="Finance &amp; Banking">Finance &amp; Banking</option>
-            <option value="Marketing &amp; Advertising">Marketing &amp; Advertising</option>
-            <option value="Legal">Legal</option>
-            <option value="Medical &amp; Healthcare">Medical &amp; Healthcare</option>
-            <option value="Engineering">Engineering</option>
-            <option value="Human Resources">Human Resources</option>
-            <option value="Sales">Sales</option>
-            <option value="Education">Education</option>
-            <option value="Logistics &amp; Supply Chain">Logistics &amp; Supply Chain</option>
-          </select>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color:var(--text-muted)">Professional Sector</label>
+          <input id="sector" type="text" placeholder="e.g. IT, Legal, Finance, Pharma…" required
+                 class="w-full rounded-lg px-3 py-2.5 text-sm transition"
+                 style="background:var(--surface3);color:var(--text);border:1px solid var(--border2)" />
         </div>
 
-        <!-- Tone hint (optional) -->
+        <!-- Context -->
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
-            Additional Context <span class="font-normal text-slate-400">(optional)</span>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color:var(--text-muted)">
+            Context / Notes <span class="font-normal" style="color:var(--text-dim)">(optional)</span>
           </label>
-          <textarea id="extra" rows="2" placeholder="e.g. Students prefer debate over grammar drills, group is very talkative…"
-                    class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm transition resize-none"></textarea>
+          <textarea id="extra" rows="3"
+                    placeholder="e.g. Group loves debate. Mix of managers and junior staff. Upcoming US stakeholder kick-off…"
+                    class="w-full rounded-lg px-3 py-2 text-sm transition resize-none"
+                    style="background:var(--surface3);color:var(--text);border:1px solid var(--border2)"></textarea>
         </div>
 
-        <!-- Submit -->
-        <button type="submit"
-                class="w-full bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-700 hover:to-indigo-600
-                       text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition-all text-sm tracking-wide">
-          ✨ Generate Lesson Plan
+        <!-- Step 1 button -->
+        <button type="submit" id="btn-suggest"
+                class="w-full font-bold py-3 rounded-xl shadow-md transition-all text-sm tracking-wide text-white"
+                style="background:var(--accent)">
+          💡 Get Topic Suggestions
         </button>
 
       </form>
+
+      <!-- Step 2: generate panel -->
+      <div id="generate-section" class="hidden px-5 pb-5 space-y-3">
+        <div class="rounded-xl px-4 py-3" style="background:var(--accent-bg);border:1px solid var(--accent-border)">
+          <p class="text-xs font-semibold mb-0.5" style="color:var(--accent2)">Selected topic</p>
+          <p id="selected-topic-label" class="text-sm font-bold" style="color:var(--text)">—</p>
+        </div>
+        <button id="btn-generate"
+                class="w-full font-bold py-3 rounded-xl shadow-md transition-all text-sm tracking-wide text-white"
+                style="background:linear-gradient(135deg,#059669,#0d9488)">
+          ✨ Generate Full Lesson Plan
+        </button>
+        <button id="btn-back"
+                class="w-full text-xs underline transition"
+                style="color:var(--text-muted)">
+          ← Change parameters / get new topics
+        </button>
+      </div>
+
     </div>
   </aside>
 
-  <!-- ── OUTPUT PANEL ──────────────────────────────────────────────── -->
-  <main id="output-panel" class="flex-1 min-w-0">
+  <!-- OUTPUT PANEL -->
+  <main id="output-panel" class="flex-1 min-w-0 space-y-5">
 
     <!-- Empty state -->
-    <div id="empty-state" class="bg-white rounded-2xl shadow border border-slate-200 flex flex-col items-center justify-center text-center py-24 px-8">
-      <div class="text-5xl mb-4">📋</div>
-      <h3 class="text-xl font-bold text-slate-700 mb-2">Your lesson plan will appear here</h3>
-      <p class="text-slate-400 text-sm max-w-sm">
-        Fill in the form on the left and click <strong>Generate Lesson Plan</strong>. You can use Demo mode for an instant preview, or paste an API key for live AI generation.
-      </p>
+    <div id="empty-state" class="rounded-2xl flex flex-col items-center justify-center text-center py-24 px-8"
+         style="background:var(--surface);border:1px solid var(--border)">
+      <div class="text-5xl mb-4">🗂️</div>
+      <h3 class="text-xl font-bold mb-2" style="color:var(--text)">Two steps to your lesson plan</h3>
+      <ol class="text-sm space-y-1 text-left max-w-sm list-decimal list-inside" style="color:var(--text-muted)">
+        <li>Fill in your parameters and click <strong style="color:var(--text)">Get Topic Suggestions</strong></li>
+        <li>Choose a topic the AI recommends, then click <strong style="color:var(--text)">Generate Full Lesson Plan</strong></li>
+      </ol>
     </div>
 
-    <!-- Loading state (hidden by default) -->
-    <div id="loading-state" class="hidden bg-white rounded-2xl shadow border border-slate-200 flex flex-col items-center justify-center text-center py-24 px-8">
+    <!-- Loading state -->
+    <div id="loading-state" class="hidden rounded-2xl flex-col items-center justify-center text-center py-24 px-8"
+         style="background:var(--surface);border:1px solid var(--border)">
       <div class="spinner mb-5"></div>
-      <p class="text-slate-600 font-semibold text-base" id="loading-msg">Generating your lesson plan…</p>
-      <p class="text-slate-400 text-sm mt-1">The AI is crafting a bespoke plan based on your parameters.</p>
+      <p class="font-semibold text-base" id="loading-msg" style="color:var(--text)">Working…</p>
+      <p class="text-sm mt-1" id="loading-sub" style="color:var(--text-muted)"></p>
     </div>
 
-    <!-- Generated content (hidden by default) -->
+    <!-- Topic suggestions -->
+    <div id="topics-state" class="hidden">
+      <div class="rounded-2xl p-6" style="background:var(--surface);border:1px solid var(--border)">
+        <div class="flex items-center gap-3 mb-1">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-base" style="background:var(--accent-bg);border:1px solid var(--accent-border)">💡</div>
+          <div>
+            <h3 class="font-bold text-base" style="color:var(--text)">Suggested Topics</h3>
+            <p id="topics-sub" class="text-xs" style="color:var(--text-muted)"></p>
+          </div>
+        </div>
+        <p class="text-xs mb-5 ml-11" style="color:var(--text-muted)">Click a topic to select it, then click <strong style="color:var(--text)">Generate Full Lesson Plan</strong> in the sidebar.</p>
+        <div id="topics-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+      </div>
+    </div>
+
+    <!-- Generated lesson plan -->
     <div id="generated-content" class="hidden space-y-5">
 
-      <!-- Plan header card -->
-      <div id="plan-header" class="bg-gradient-to-br from-brand-700 via-brand-600 to-indigo-500 rounded-2xl shadow-lg text-white px-8 py-7 section-card delay-1">
+      <!-- Plan header -->
+      <div id="plan-header" class="rounded-2xl shadow-lg px-8 py-7 section-card delay-1"
+           style="background:linear-gradient(135deg,#0d0d1f 0%,#161630 50%,#0d0d1f 100%);border:1px solid var(--border2)">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p class="text-brand-100 text-xs font-semibold uppercase tracking-widest mb-1">Lesson Plan</p>
-            <h2 id="hdr-topic" class="text-2xl font-extrabold leading-tight"></h2>
-            <p id="hdr-sub" class="text-brand-100 text-sm mt-1"></p>
+            <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color:var(--accent2)">Lesson Plan</p>
+            <h2 id="hdr-topic" class="text-2xl font-extrabold leading-tight" style="color:var(--text)"></h2>
+            <p id="hdr-sub" class="text-sm mt-1" style="color:var(--text-muted)"></p>
           </div>
           <div class="flex flex-wrap gap-2" id="hdr-badges"></div>
         </div>
-        <!-- Timeline bar -->
         <div class="mt-5" id="timeline-bar"></div>
       </div>
 
-      <!-- Sections container -->
+      <!-- Sections -->
       <div id="sections-container" class="space-y-5"></div>
 
     </div>
-  </main>
 
+  </main>
 </div>
 
-<!-- ══ FOOTER ═════════════════════════════════════════════════════════ -->
-<footer class="text-center text-xs text-slate-400 py-6 no-print">
-  AI English Lesson Planner · Built for Spanish adult learners · Powered by the Communicative Language Teaching framework
+<footer class="text-center text-xs py-6 no-print" style="color:var(--text-dim)">
+  AI English Lesson Planner · Built for Spanish adult learners · CLT + TBLT Framework
 </footer>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════
-//  CONFIG & CONSTANTS
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════════
 
-const QUICK_TOPICS = [
-  'Remote Work', 'AI & Jobs', 'Negotiation', 'Leadership',
-  'Climate Tech', 'Work-Life Balance', 'Startup Culture'
+const PROPORTIONS   = [0.10, 0.35, 0.20, 0.25, 0.10];
+const SECTION_META  = [
+  { id:'warmup',   emoji:'🔥', title:'Warm-Up & Lead-In',          color:'from-orange-50 to-amber-50',   border:'border-orange-200',  accent:'bg-orange-500',  textAccent:'text-orange-700' },
+  { id:'debate',   emoji:'💬', title:'Deep Conversation & Debate',  color:'from-blue-50 to-indigo-50',    border:'border-blue-200',    accent:'bg-blue-500',    textAccent:'text-blue-700' },
+  { id:'language', emoji:'📚', title:'Targeted Language Upgrade',   color:'from-violet-50 to-purple-50',  border:'border-violet-200',  accent:'bg-violet-500',  textAccent:'text-violet-700' },
+  { id:'roleplay', emoji:'🎭', title:'Professional Role-Plays',     color:'from-emerald-50 to-teal-50',   border:'border-emerald-200', accent:'bg-emerald-500', textAccent:'text-emerald-700' },
+  { id:'pitfalls', emoji:'⚠️', title:'Spanish-Speaker Pitfalls',    color:'from-rose-50 to-pink-50',      border:'border-rose-200',    accent:'bg-rose-500',    textAccent:'text-rose-700' },
 ];
+const BAR_COLOURS   = ['bg-amber-400','bg-blue-500','bg-violet-500','bg-emerald-500','bg-rose-500'];
+const BAR_LABELS    = ['Warm-Up','Debate','Language','Role-Play','Pitfalls'];
 
-// Section proportions [warmup, debate, language, roleplay, pitfalls]
-const PROPORTIONS = [0.10, 0.35, 0.20, 0.25, 0.10];
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
 
-// Section metadata
-const SECTION_META = [
-  { id: 'warmup',   emoji: '🔥', title: 'Warm-Up & Lead-In',             color: 'from-orange-50 to-amber-50',   border: 'border-orange-200',  accent: 'bg-orange-500', textAccent: 'text-orange-700' },
-  { id: 'debate',   emoji: '💬', title: 'Deep Conversation & Debate',     color: 'from-blue-50 to-indigo-50',    border: 'border-blue-200',    accent: 'bg-blue-500',   textAccent: 'text-blue-700' },
-  { id: 'language', emoji: '📚', title: 'Targeted Language Upgrade',      color: 'from-violet-50 to-purple-50',  border: 'border-violet-200',  accent: 'bg-violet-500', textAccent: 'text-violet-700' },
-  { id: 'roleplay', emoji: '🎭', title: 'Professional Role-Plays',        color: 'from-emerald-50 to-teal-50',   border: 'border-emerald-200', accent: 'bg-emerald-500',textAccent: 'text-emerald-700' },
-  { id: 'pitfalls', emoji: '⚠️',  title: "Spanish-Speaker Pitfalls",      color: 'from-rose-50 to-pink-50',      border: 'border-rose-200',    accent: 'bg-rose-500',   textAccent: 'text-rose-700' },
-];
+let currentParams   = null;
+let selectedTopic   = null;
 
-// Colour lookup for timeline bar
-const BAR_COLOURS = ['bg-amber-400','bg-blue-500','bg-violet-500','bg-emerald-500','bg-rose-500'];
-const BAR_LABELS  = ['Warm-Up','Debate','Language','Role-Play','Pitfalls'];
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
 
-
-// ═══════════════════════════════════════════════════════════════════
-//  DEMO DATA GENERATOR
-//  Returns a realistic mock plan object based on user inputs.
-//  All sections below mirror what the live API prompt would return.
-// ═══════════════════════════════════════════════════════════════════
-
-function buildDemoData(params) {
-  const { level, students, topic, duration, sector, extra } = params;
-  const dur = parseInt(duration, 10);
-
-  // ── Warm-Up ────────────────────────────────────────────────────
-  const warmup = {
-    hook: `Display a split image: one side showing a packed Spanish open-plan office circa 2015, the other a person working from a sun-lit home office with a Barcelona skyline visible through the window.`,
-    promptQuestion: `"When you picture your ideal working environment in five years, does it look more like your current setup — or something completely different? What would you genuinely miss if your office disappeared tomorrow?"`,
-    teacherNote: `Allow 2–3 minutes of unguided mini-discussion in pairs before opening to the group. The goal is activation, not accuracy — resist correcting at this stage.`,
-    icebreaker: `Ask students to rate their 'remote-work happiness score' out of 10 on a sticky note (or verbally). Use variance in the group to spark the debate section.`
+function getParams() {
+  return {
+    level:    document.getElementById('level').value,
+    students: document.getElementById('students').value,
+    duration: document.querySelector('input[name="duration"]:checked')?.value || '60',
+    sector:   document.getElementById('sector').value.trim(),
+    extra:    document.getElementById('extra').value.trim(),
   };
-
-  // ── Debate Questions ────────────────────────────────────────────
-  const debateMap = {
-    B1: [
-      `Is working from home really better for productivity, or do people just think it is?`,
-      `Should companies have the right to insist all employees work from the office?`,
-      `What are the biggest problems with remote work for younger employees who are just starting their careers?`,
-      `Do you think remote work will become the norm in Spain in the next ten years? Why or why not?`
-    ],
-    B2: [
-      `To what extent has remote work exposed structural inequalities — both within organisations and across different socioeconomic groups?`,
-      `Some critics argue that remote work erodes company culture beyond repair. Do you agree, or can culture be preserved digitally?`,
-      `Is the 'right to disconnect' legislation in Spain (Ley del derecho a la desconexión digital) sufficient, or does it create a false sense of protection?`,
-      `How should performance management systems evolve to remain fair and effective in a hybrid or fully remote environment?`
-    ],
-    C1: [
-      `To what extent is the so-called 'productivity paradox' of remote work a reflection of flawed measurement systems rather than a genuine decline in output?`,
-      `Is the corporate push for 'return to office' driven by legitimate operational needs, or is it fundamentally about managerial control and commercial real estate investment?`,
-      `How does the concept of 'psychological safety' change — and what are the implications — when teams are geographically distributed across cultures and time zones?`,
-      `Critically evaluate the claim that asynchronous communication is not merely a tool but a fundamentally different organisational philosophy that most companies are ill-equipped to adopt.`
-    ],
-    C2: [
-      `In what ways does the remote work paradigm challenge Foucault's concept of the 'disciplinary gaze', and does it represent a genuine liberation from workplace surveillance or merely a mutation of it?`,
-      `Analyse the assertion that hybrid work models are a compromise that satisfies neither the logic of collaboration nor the logic of autonomy — and consider whether a more coherent alternative exists.`,
-      `To what degree is the glorification of remote work within the ${sector} sector a reflection of class privilege, given that it is structurally unavailable to the majority of the global workforce?`,
-      `How should we reconcile the tension between organisational demands for visibility and accountability with the emergent literature on 'deep work' and uninterrupted cognitive flow?`
-    ]
-  };
-  const questions = debateMap[level] || debateMap['B2'];
-
-  // ── Language Upgrade ────────────────────────────────────────────
-  const language = {
-    phrasalVerbs: [
-      {
-        phrase: 'to log off (from something)',
-        definition: 'To disconnect from a system or situation, often implying a mental or emotional disengagement, not just a technical one.',
-        example: `"At 6pm I try to fully log off — no Slack, no emails. My productivity the next morning is noticeably higher."`,
-        tip: `Spanish false friend alert: Spaniards often say "disconnectarme" — while this is acceptable informal Spanish, the English equivalent requires "disconnect" or "log off", not a direct calque.`
-      },
-      {
-        phrase: 'to roll out (a policy / tool)',
-        definition: 'To gradually introduce or implement something across an organisation.',
-        example: `"They're rolling out the new hybrid attendance policy across all ${sector} teams next quarter."`,
-        tip: `Distinguish from "launch" — rolling out implies a phased, controlled process; launching implies a single, high-visibility moment.`
-      }
-    ],
-    idioms: [
-      {
-        phrase: 'the elephant in the room',
-        definition: 'An obvious, significant problem or issue that everyone is aware of but nobody wants to discuss directly.',
-        example: `"We've been talking about productivity metrics for an hour, but the elephant in the room is that nobody trusts the data."`,
-        tip: `Common Spanish equivalent: "el elefante en la habitación" — now also used in Spanish business contexts due to English influence.`
-      },
-      {
-        phrase: 'to keep one\'s finger on the pulse',
-        definition: 'To stay continuously informed about the latest developments or changes in a situation.',
-        example: `"As a ${sector} manager, you need to keep your finger on the pulse of what your remote team is actually working on day-to-day."`,
-        tip: `Do NOT say "keep the finger" — the article "one's" is essential to the idiom.`
-      }
-    ],
-    functionalPhrases: [
-      {
-        phrase: 'I'd push back on that slightly…',
-        definition: 'A professional, non-confrontational way to disagree with a point in a meeting or discussion.',
-        example: `"I'd push back on that slightly — the data from our ${sector} team suggests the opposite trend when we control for seniority."`,
-        tip: `Much more natural in professional English than "I don't agree" or "That's wrong." Tone is critical.`
-      },
-      {
-        phrase: 'It's worth flagging that…',
-        definition: 'Used to draw attention to a risk, caveat, or important consideration without alarming the listener.',
-        example: `"It's worth flagging that rolling out this remote policy without manager training could create inconsistencies in how teams interpret the rules."`,
-        tip: `Equivalent to "cabe señalar que" in formal Spanish. A high-value phrase for emails and presentations.`
-      }
-    ]
-  };
-
-  // ── Role-Plays ──────────────────────────────────────────────────
-  const roleplayMap = {
-    'IT & Technology': {
-      scenario1: {
-        title: 'Sprint Planning — Remote vs. In-Office Debate',
-        context: `You and a colleague are both senior engineers on a product team. The team is split: two members want full-time remote, three want hybrid. The sprint planning meeting has derailed into a broader conversation about working norms.`,
-        roleA: `You believe full-remote makes engineers more focused and reduces interruptions. Defend this position using concrete examples from your own experience.`,
-        roleB: `You've noticed that pair programming and spontaneous knowledge transfer are suffering. Advocate for at least 2 days per week in-office, with data to back it up.`,
-        usefulLanguage: `"From an engineering standpoint…" / "The latency in async communication costs us…" / "I'd propose a trial period of…"`
-      },
-      scenario2: {
-        title: 'Client Discovery Call — Pitching a Remote-First Delivery Model',
-        context: `Your software consultancy is pitching to a conservative financial services client who is sceptical about offsite delivery. This is a €2M contract.`,
-        roleA: `You are the lead consultant. Reassure the client about governance, communication cadence, and output quality without being defensive.`,
-        roleB: `You are the client's IT Director. Ask tough questions about security protocols, escalation paths, and how you'll have visibility into daily progress.`,
-        usefulLanguage: `"Our governance model includes…" / "I can assure you that visibility won't be an issue because…" / "In our experience with similar engagements…"`
-      }
-    }
-  };
-
-  // Generic role-play for other sectors
-  const genericRoleplay = {
-    scenario1: {
-      title: `Internal Team Meeting: Hybrid Work Policy Negotiation`,
-      context: `Your ${sector} team is meeting to agree on a hybrid work schedule for Q3. Two team members have very different needs: one has a long commute and a young family; the other thrives on in-person collaboration.`,
-      roleA: `Advocate for a flexible 3-day remote model. Explain how you'll maintain visibility, meet deadlines, and communicate proactively.`,
-      roleB: `You're the line manager. You need to balance individual preferences with team cohesion, client expectations, and performance accountability.`,
-      usefulLanguage: `"What I need from my side is…" / "Could we perhaps pilot this for…" / "I hear what you're saying, but my concern is…"`
-    },
-    scenario2: {
-      title: `High-Stakes Client / Stakeholder Call: Justifying Remote Delivery`,
-      context: `A key ${sector} client or stakeholder has raised concerns after a project milestone was missed. They are questioning whether your team's remote setup is the root cause.`,
-      roleA: `You are the account lead. Address the concern head-on, present a recovery plan, and rebuild trust without making empty promises.`,
-      roleB: `You are the client. Express your dissatisfaction professionally, ask direct questions about process improvements, and decide whether to escalate or accept the plan.`,
-      usefulLanguage: `"I take full responsibility for…" / "The corrective measures we're putting in place are…" / "What assurances can you give me that…"`
-    }
-  };
-
-  const sectorRoleplays = roleplayMap[sector] || genericRoleplay;
-
-  // ── Spanish Pitfalls ────────────────────────────────────────────
-  const pitfalls = [
-    {
-      error: `"It depends of the situation"`,
-      correction: `"It depends ON the situation"`,
-      explanation: `The verb "depend" always takes the preposition "on" in English. The Spanish "depender de" misleads Spanish speakers into using "of". This is one of the most frequent preposition errors at all levels.`,
-      severity: 'high'
-    },
-    {
-      error: `Overusing "actual/actually" to mean "current/currently"`,
-      correction: `"Actually" = in fact / surprisingly. "Current" = the one happening now.`,
-      explanation: `False friend: "actual" in Spanish means "current". In English, "Actually, remote work is more productive" means "Surprisingly / In fact…" — not "Currently…"`,
-      severity: 'high'
-    },
-    {
-      error: `"I am agree with you" / "I am disagree"`,
-      correction: `"I agree with you" / "I disagree"`,
-      explanation: `"Agree" and "disagree" are verbs, not adjectives. The construction "I am + agree" is a direct translation of "estoy de acuerdo" and must be avoided.`,
-      severity: 'high'
-    },
-    {
-      error: `Using the Present Simple for in-progress actions: "I work from home today"`,
-      correction: `"I'm working from home today"`,
-      explanation: `Spanish uses the Present Simple far more broadly (e.g., "Hoy trabajo desde casa"). English requires the Present Continuous for temporary, in-progress situations. This is a persistent intermediate error.`,
-      severity: level === 'B1' || level === 'B2' ? 'high' : 'medium'
-    },
-    {
-      error: `Over-literal translation of reflexive verbs: "I will inform me about the policy"`,
-      correction: `"I will find out about the policy" / "I will look into it"`,
-      explanation: `Spanish reflexive constructions (me informaré, me prepararé) often have idiomatic English equivalents that sound far more natural. Learners translate the structure rather than the meaning.`,
-      severity: 'medium'
-    },
-    {
-      error: `Misusing "make" and "do": "make an effort" vs. "do a work"`,
-      correction: `"do the work" / "make an effort" / "do a presentation" / "make a decision"`,
-      explanation: `The make/do distinction has no direct Spanish equivalent (both map to "hacer"). Key rule: "make" is used for constructive/creative acts (make a plan, make a call); "do" for tasks/activities (do research, do overtime).`,
-      severity: 'medium'
-    }
-  ];
-
-  return { warmup, questions, language, roleplay: sectorRoleplays, pitfalls };
 }
 
-
-// ═══════════════════════════════════════════════════════════════════
-//  SYSTEM PROMPT BUILDER
-//  This is the prompt sent to the LLM when using live API mode.
-//  It encodes the full pedagogical framework and output schema.
-// ═══════════════════════════════════════════════════════════════════
-
-function buildSystemPrompt(params) {
-  const { level, students, topic, duration, sector, extra } = params;
-  return `You are an expert CELTA/DELTA-certified English Language Teacher specialising in Business English for adult Spanish learners (B1–C2). You design communicative, learner-centred lesson plans grounded in the Task-Based Language Teaching (TBLT) and Communicative Language Teaching (CLT) frameworks.
-
-CONTEXT:
-- Student level: ${level}
-- Number of students: ${students}
-- Topic: "${topic}"
-- Lesson duration: ${duration} minutes
-- Professional sector: ${sector}
-- Additional teacher notes: ${extra || 'None'}
-
-OUTPUT REQUIREMENTS:
-Respond ONLY with a valid JSON object matching this exact schema. No markdown fences. No explanation outside the JSON.
-
-{
-  "warmup": {
-    "hook": "string — a vivid, visual or provocative hook activity (1–2 sentences describing what to show/do)",
-    "promptQuestion": "string — the exact warm-up discussion question to pose to the group",
-    "teacherNote": "string — a pedagogical tip on how to run this stage",
-    "icebreaker": "string — a short, fun follow-up icebreaker activity"
-  },
-  "questions": [
-    "string — debate question 1",
-    "string — debate question 2",
-    "string — debate question 3",
-    "string — debate question 4"
-  ],
-  "language": {
-    "phrasalVerbs": [
-      {
-        "phrase": "string",
-        "definition": "string",
-        "example": "string — realistic, sector-specific example sentence",
-        "tip": "string — Spanish-speaker specific note on usage or false friends"
-      },
-      { "phrase": "...", "definition": "...", "example": "...", "tip": "..." }
-    ],
-    "idioms": [
-      { "phrase": "...", "definition": "...", "example": "...", "tip": "..." },
-      { "phrase": "...", "definition": "...", "example": "...", "tip": "..." }
-    ],
-    "functionalPhrases": [
-      { "phrase": "...", "definition": "...", "example": "...", "tip": "..." },
-      { "phrase": "...", "definition": "...", "example": "...", "tip": "..." }
-    ]
-  },
-  "roleplay": {
-    "scenario1": {
-      "title": "string",
-      "context": "string",
-      "roleA": "string",
-      "roleB": "string",
-      "usefulLanguage": "string"
-    },
-    "scenario2": {
-      "title": "string",
-      "context": "string",
-      "roleA": "string",
-      "roleB": "string",
-      "usefulLanguage": "string"
-    }
-  },
-  "pitfalls": [
-    {
-      "error": "string — the incorrect form Spanish speakers typically produce",
-      "correction": "string — the correct English form",
-      "explanation": "string — clear, concise explanation of why this error occurs",
-      "severity": "high | medium | low"
-    }
-  ]
+function getAPIConfig() {
+  const key      = document.getElementById('api-key').value.trim();
+  const provider = document.getElementById('api-provider').value;
+  return { key, provider, live: key.length > 10 };
 }
 
-PEDAGOGICAL GUIDELINES:
-- Warm-Up: Cognitive/affective hook. Avoid grammar focus. Activate schemata.
-- Debate questions: Calibrate abstraction and lexical demand exactly to ${level}. Questions should push beyond factual recall into evaluation, analysis, and synthesis.
-- Language: Choose items that are HIGH-FREQUENCY in professional ${sector} contexts, directly connected to the topic, and commonly absent from Spanish-speaker lexicons. Avoid obscure or archaic items.
-- Role-plays: Scenario 1 = collegial/peer internal situation. Scenario 2 = high-stakes external stakeholder or client situation. Both MUST be plausible in the ${sector} sector.
-- Pitfalls: Focus on errors SPECIFIC to the topic grammar or vocabulary, not generic lists. At least 2 items should be directly triggered by the topic "${topic}".`;
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-//  TIMESTAMP CALCULATOR
-// ═══════════════════════════════════════════════════════════════════
-
-function calcTimestamps(durationMins) {
-  const times = [];
-  let cursor = 0;
-  PROPORTIONS.forEach(p => {
-    const start = cursor;
-    const len   = Math.round(p * durationMins);
-    const end   = cursor + len;
-    times.push({ start, end, len });
-    cursor = end;
+function showState(id) {
+  ['empty-state','loading-state','topics-state','generated-content'].forEach(s => {
+    const el = document.getElementById(s);
+    if (s === 'loading-state') {
+      el.classList.toggle('hidden', s !== id);
+      el.classList.toggle('flex',   s === id);
+    } else {
+      el.classList.toggle('hidden', s !== id);
+    }
   });
-  // Correct rounding drift on last section
-  times[times.length - 1].end = durationMins;
-  times[times.length - 1].len = durationMins - times[times.length - 1].start;
-  return times;
 }
 
-function fmtTime(mins) {
-  if (mins < 60) return `${mins} min`;
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+function setLoading(msg, sub='') {
+  document.getElementById('loading-msg').textContent = msg;
+  document.getElementById('loading-sub').textContent = sub;
+  showState('loading-state');
 }
 
-function tsLabel(ts) {
-  return `${ts.start}–${ts.end} min`;
+function calcTimestamps(dur) {
+  let cursor = 0;
+  return PROPORTIONS.map(p => {
+    const start = cursor;
+    const len   = Math.round(p * dur);
+    cursor += len;
+    return { start, end: cursor, len };
+  });
 }
 
+// ═══════════════════════════════════════════════
+//  API CALLER
+//  Shared fetch wrapper for both OpenAI + Anthropic.
+//  systemPrompt and userMessage are passed in;
+//  returns the raw text content from the model.
+// ═══════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════════════
-//  LIVE API CALL
-//  Supports both OpenAI (GPT-4o) and Anthropic (Claude) APIs.
-// ═══════════════════════════════════════════════════════════════════
+async function callAPI(systemPrompt, userMessage, { key, provider }) {
 
-async function callLiveAPI(params, apiKey, provider) {
-  const systemPrompt = buildSystemPrompt(params);
-  const userMessage  = `Generate the lesson plan now for topic: "${params.topic}"`;
-
-  // ── OpenAI ──────────────────────────────────────────────────────
   if (provider === 'openai') {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      // API payload construction — model, messages, and response format
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${key}` },
       body: JSON.stringify({
         model: 'gpt-4o',
+        temperature: 0.85,
+        max_tokens: 4096,
+        response_format: { type: 'json_object' },   // <-- enforces JSON output
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user',   content: userMessage }
-        ],
-        temperature: 0.8,
-        max_tokens: 3500,
-        response_format: { type: 'json_object' }  // ensures valid JSON output
-      })
-    });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err?.error?.message || `OpenAI error ${response.status}`);
-    }
-
-    const data = await response.json();
-    // Extract the text content from OpenAI's response envelope
-    const raw = data.choices?.[0]?.message?.content;
-    return JSON.parse(raw);
-  }
-
-  // ── Anthropic (Claude) ──────────────────────────────────────────
-  if (provider === 'anthropic') {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      // API payload — system goes in the top-level "system" field for Claude
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 4096,
-        system: systemPrompt,
-        messages: [
-          { role: 'user', content: userMessage }
+          { role: 'user',   content: userMessage  }
         ]
       })
     });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message || `OpenAI ${res.status}`); }
+    const d = await res.json();
+    return d.choices[0].message.content;                // extract text from OpenAI envelope
+  }
 
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err?.error?.message || `Anthropic error ${response.status}`);
-    }
-
-    const data = await response.json();
-    // Extract content from Anthropic's response envelope
-    const raw = data.content?.[0]?.text;
-    // Claude may wrap JSON in code fences — strip them if present
-    const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-    return JSON.parse(cleaned);
+  if (provider === 'anthropic') {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4096,
+        system: systemPrompt,                           // system prompt in top-level field for Claude
+        messages: [{ role:'user', content: userMessage }]
+      })
+    });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message || `Anthropic ${res.status}`); }
+    const d = await res.json();
+    const raw = d.content[0].text;
+    // Claude sometimes wraps JSON in code fences — strip them
+    return raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
   }
 
   throw new Error('Unknown provider');
 }
 
+// ═══════════════════════════════════════════════
+//  STEP 1 — TOPIC SUGGESTIONS
+// ═══════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════════════
-//  RENDER ENGINE
-//  Takes the data object + timestamps and builds the HTML output.
-// ═══════════════════════════════════════════════════════════════════
+function buildTopicSuggestionPrompt(params) {
+  const { level, students, duration, sector, extra } = params;
+  return {
+    system: `You are an expert CELTA-certified Business English teacher specialising in adult Spanish learners (B1–C2).
+Your task is to suggest engaging, professionally relevant lesson topics.
 
-function renderPlan(data, params, timestamps) {
-  const { level, students, topic, duration, sector } = params;
-  const dur = parseInt(duration, 10);
+Return ONLY a valid JSON object — no markdown, no explanation:
+{
+  "topics": [
+    {
+      "title": "string — concise topic title (max 8 words)",
+      "rationale": "string — 1 sentence: why this topic is valuable for this group",
+      "angle": "string — 1 sentence: the specific angle or debate hook that makes it rich for discussion",
+      "grammarFocus": "string — the primary grammar or language structure this topic naturally surfaces"
+    }
+  ]
+}
 
-  // ── Header card ─────────────────────────────────────────────────
+Generate exactly 8 topics. Vary them: mix current affairs, professional skills, ethics, technology, interpersonal dynamics. Calibrate vocabulary and conceptual depth precisely to ${level}.`,
+    user: `Student level: ${level}
+Students: ${students}
+Duration: ${duration} minutes
+Sector: ${sector}
+Context: ${extra || 'No additional context'}
+
+Suggest 8 engaging lesson topics for this group.`
+  };
+}
+
+// Demo topics for when no API key is provided
+function buildDemoTopics(params) {
+  const { sector, level } = params;
+  return [
+    { title: 'The Future of Remote Work',          rationale: `Universally relevant in ${sector} and generates strong opinions across seniority levels.`,       angle: 'Is the return-to-office movement a power grab or a legitimate business need?',                grammarFocus: 'Modal verbs of speculation (will/might/could)' },
+    { title: 'AI and Job Displacement',             rationale: `Directly impacts ${sector} professionals and prompts both fear and optimism.`,                  angle: 'Should companies be legally required to retrain staff whose roles are automated away?',        grammarFocus: 'Conditional structures (If… were to…)' },
+    { title: 'Negotiation Across Cultures',         rationale: 'Critical for any professional working with international clients or partners.',                   angle: 'Is cultural sensitivity a genuine skill or a polite excuse for avoiding directness?',          grammarFocus: 'Diplomatic and hedging language' },
+    { title: 'Work-Life Balance: Myth or Reality?', rationale: 'Emotionally engaging topic that surfaces rich personal vocabulary and strong debate positions.',  angle: `Does ${sector} culture actively undermine the work-life balance it publicly promotes?`,         grammarFocus: 'Present Perfect vs. Simple Past' },
+    { title: 'Diversity & Inclusion at Work',       rationale: `A nuanced topic that requires ${level}-level abstract reasoning and evaluation.`,                angle: 'Are diversity quotas a fair solution or a form of reverse discrimination?',                   grammarFocus: 'Passive voice and reporting language' },
+    { title: 'Leadership in Times of Crisis',       rationale: 'Naturally generates role-play scenarios and high-value functional language.',                    angle: 'Can empathetic leadership coexist with hard commercial decisions?',                           grammarFocus: 'Past Perfect narrative structures' },
+    { title: 'The Ethics of Data Privacy',          rationale: `Highly relevant to ${sector} and generates genuine ethical dilemmas with no easy answers.`,     angle: 'Should individuals own their data, or is that an unrealistic expectation in the digital age?', grammarFocus: 'Discourse markers and argument structuring' },
+    { title: 'Giving & Receiving Feedback',         rationale: `One of the highest-impact professional skills, often underdeveloped in Spanish ${sector} contexts.`, angle: 'Why do most employees say they want honest feedback but react badly when they receive it?',   grammarFocus: 'Indirect questions and softening language' },
+  ];
+}
+
+async function fetchTopicSuggestions(params) {
+  const api = getAPIConfig();
+  if (!api.live) {
+    await new Promise(r => setTimeout(r, 800));
+    return buildDemoTopics(params);
+  }
+  const { system, user } = buildTopicSuggestionPrompt(params);
+  const raw  = await callAPI(system, user, api);
+  const json = JSON.parse(raw);
+  return json.topics;
+}
+
+// ═══════════════════════════════════════════════
+//  STEP 2 — FULL LESSON PLAN
+// ═══════════════════════════════════════════════
+
+function buildLessonPrompt(params, topic) {
+  const { level, students, duration, sector, extra } = params;
+  return {
+    system: `You are an expert CELTA/DELTA-certified English Language Teacher specialising in Business English for adult Spanish learners (B1–C2).
+You design communicative, learner-centred lesson plans grounded in Task-Based Language Teaching (TBLT) and Communicative Language Teaching (CLT).
+
+Return ONLY a valid JSON object with this exact schema. No markdown fences. No text outside the JSON.
+
+{
+  "warmup": {
+    "hook": "string — vivid visual or provocative hook (what to show or do)",
+    "promptQuestion": "string — exact warm-up discussion question to pose",
+    "teacherNote": "string — pedagogical tip on running this stage",
+    "icebreaker": "string — short follow-up icebreaker activity"
+  },
+  "questions": ["string","string","string","string"],
+  "language": {
+    "phrasalVerbs": [
+      { "phrase":"string","definition":"string","example":"string — sector-specific","tip":"string — Spanish-speaker note" },
+      { "phrase":"string","definition":"string","example":"string","tip":"string" }
+    ],
+    "idioms": [
+      { "phrase":"string","definition":"string","example":"string","tip":"string" },
+      { "phrase":"string","definition":"string","example":"string","tip":"string" }
+    ],
+    "functionalPhrases": [
+      { "phrase":"string","definition":"string","example":"string","tip":"string" },
+      { "phrase":"string","definition":"string","example":"string","tip":"string" }
+    ]
+  },
+  "roleplay": {
+    "scenario1": {
+      "title":"string","context":"string",
+      "roleA":"string","roleB":"string",
+      "teacherNotes":"string — how to set up, monitor, and debrief this scenario",
+      "usefulLanguage":"string"
+    },
+    "scenario2": {
+      "title":"string","context":"string",
+      "roleA":"string","roleB":"string",
+      "teacherNotes":"string — how to set up, monitor, and debrief this scenario",
+      "usefulLanguage":"string"
+    }
+  },
+  "pitfalls": [
+    { "error":"string","correction":"string","explanation":"string","severity":"high|medium|low" }
+  ],
+  "teacherNotes": {
+    "preparation": "string — what to prepare before the lesson (materials, room setup, etc.)",
+    "pacing": "string — advice on managing time across the five sections",
+    "differentiation": "string — how to adapt activities up or down for mixed-ability groups",
+    "errorCorrection": "string — when and how to correct during this specific lesson",
+    "closingReflection": "string — a suggested closing question or task to end the lesson on a high"
+  }
+}
+
+GUIDELINES:
+- Debate questions: calibrate exactly to ${level} — B1 accessible/factual, C2 philosophical/analytical.
+- Language items: HIGH-FREQUENCY in ${sector}, directly connected to the topic, absent from typical Spanish-speaker lexicon.
+- Role-plays: Scenario 1 = peer/internal; Scenario 2 = high-stakes external stakeholder. Both plausible for ${sector}.
+- Pitfalls: specific to THIS topic and grammar it surfaces. Include at least 2 false friends or preposition errors.
+- Teacher Notes: practical, specific, actionable — not generic advice.`,
+    user: `Level: ${level}
+Students: ${students}
+Duration: ${duration} minutes
+Sector: ${sector}
+Topic: "${topic}"
+Context: ${extra || 'None'}
+
+Generate the full lesson plan now.`
+  };
+}
+
+// Demo lesson data
+function buildDemoLesson(params, topic) {
+  return {
+    warmup: {
+      hook: `Show a split image: left side — a packed open-plan office in Madrid, 2015; right side — a professional working from a light-filled home office with a city view. No words on the image.`,
+      promptQuestion: `"When you picture your ideal working environment in five years, does it look more like your current setup — or something completely different? What would you genuinely miss if your office disappeared tomorrow?"`,
+      teacherNote: `Allow 2–3 minutes of unguided pair chat before opening to the group. Resist correcting at this stage — activation, not accuracy, is the goal. Note any interesting language for delayed correction later.`,
+      icebreaker: `Ask each student to rate their current 'remote-work happiness score' out of 10 and say one word that explains it. Use the variation in scores to naturally transition into the debate section.`
+    },
+    questions: [
+      `Is working from home really better for productivity, or do people just think it is because they prefer the comfort?`,
+      `Should companies have the legal right to require all employees to work from the office?`,
+      `What are the hidden costs of remote work that nobody talks about — for individuals, teams, and cities?`,
+      `Is the 'right to disconnect' legislation sufficient protection for remote workers, or does it create a false sense of security?`
+    ],
+    language: {
+      phrasalVerbs: [
+        { phrase:'to log off (from something)', definition:'To disconnect from a system or situation — often implying a mental or emotional disengagement, not just a technical one.', example:`"At 6pm I try to fully log off — no Slack, no emails. My productivity the next morning is noticeably higher."`, tip:`False friend trap: students say "disconnectarme" and translate it literally as "disconnect myself". In English, "log off" is the natural verb for digital disengagement; "switch off" works for the mental sense.` },
+        { phrase:'to roll out (a policy / tool)', definition:'To gradually introduce or implement something new across an organisation in a phased way.', example:`"We're rolling out the new hybrid attendance policy across all teams next quarter — starting with senior staff."`, tip:`Don't confuse with "launch". Rolling out implies controlled phasing; launching implies a single high-visibility moment. Spanish: "implantar" or "desplegar".` }
+      ],
+      idioms: [
+        { phrase:'the elephant in the room', definition:'An obvious, important problem everyone is aware of but nobody wants to address directly.', example:`"We've been discussing hybrid models for an hour, but the elephant in the room is that nobody trusts the productivity data."`, tip:`Now used in Spanish too ("el elefante en la habitación") due to English business influence — but students may not know it in English.` },
+        { phrase:"to keep one's finger on the pulse", definition:'To stay continuously and actively informed about the latest developments in a situation.', example:`"As a remote manager, you need to keep your finger on the pulse of what your team is working on — you can't just wait for the weekly check-in."`, tip:`Critical: do NOT say "keep the finger" — the possessive "one's" is an essential part of the idiom. Also note: "pulse" here is metaphorical, not medical.` }
+      ],
+      functionalPhrases: [
+        { phrase:"I'd push back on that slightly…", definition:'A professional, assertive but non-aggressive way to disagree with a point in a discussion or meeting.', example:`"I'd push back on that slightly — the data from our team suggests the opposite trend when we control for seniority level."`, tip:`Far more natural in professional English than "I don't agree" or "That's wrong". The word "slightly" softens the pushback without weakening it. Encourage students to practise the intonation.` },
+        { phrase:'It's worth flagging that…', definition:'Used to draw attention to a risk, caveat, or important consideration in a measured, non-alarmist way.', example:`"It's worth flagging that rolling out this policy without manager training could create real inconsistencies across teams."`, tip:`Equivalent to "cabe señalar que" in formal Spanish. Extremely high-value for emails, presentations, and meetings. Students tend to overuse "I want to say that…" — this is the upgrade.` }
+      ]
+    },
+    roleplay: {
+      scenario1: {
+        title:'Team Meeting: Agreeing on a Hybrid Work Schedule',
+        context:`Your team of 4 needs to agree on a hybrid schedule for Q3. Two members have long commutes and young children; two others thrive on in-person collaboration and say remote work hurts team culture.`,
+        roleA:`You work best from home. Argue for a 3-day remote model. Explain how you'll maintain visibility, meet deadlines, and communicate proactively with the team.`,
+        roleB:`You're the line manager. You need to balance individual preferences with team cohesion, client expectations, and your own performance targets. Find a solution everyone can live with.`,
+        teacherNotes:`Set up in groups of 3–4. Give students 1 minute to read their role privately before starting. Monitor for use of hedging language and interruption strategies. After 6–7 minutes, pause and ask each group: "Did you reach an agreement? What was the sticking point?" Use this as a class discussion springboard. In the debrief, highlight any strong language use you noticed and board 2–3 examples for delayed error correction.`,
+        usefulLanguage:`"What I need from my side is…" / "Could we perhaps pilot this for one month and review?" / "I hear what you're saying, but my concern is…" / "What if we agreed on a minimum of X days?"`
+      },
+      scenario2: {
+        title:'Client Call: Addressing a Missed Milestone',
+        context:`A key client has emailed to say they're "very concerned" after a project milestone was missed last week. They've requested an urgent call. They're hinting that the team's remote setup may be to blame. This is a €1.5M contract.`,
+        roleA:`You are the account lead. Address the concern directly and professionally. Present a credible recovery plan, rebuild trust, and avoid making promises you can't keep.`,
+        roleB:`You are the client's senior director. Express your dissatisfaction professionally. Ask pointed questions about root causes, process improvements, and what guarantees exist that this won't happen again. Decide by the end of the call whether to escalate internally or accept the plan.`,
+        teacherNotes:`This is a high-stakes scenario — brief students that tone and register matter as much as content. Run it in pairs. Encourage Role B to be genuinely challenging but professional. After the role-play, ask both sides: "How did the other person make you feel? What language helped defuse or escalate tension?" This generates excellent reflective discussion and natural error correction opportunities. Board any particularly good phrases students used.`,
+        usefulLanguage:`"I take full responsibility for…" / "The corrective measures we're implementing are…" / "What assurances can you give me that…" / "I want to be transparent with you about what happened…" / "Going forward, our process will include…"`
+      }
+    },
+    pitfalls: [
+      { error:`"It depends of the situation"`, correction:`"It depends ON the situation"`, explanation:`"Depend" always takes "on" in English. The Spanish "depender de" misleads students into using "of". This is the single most common preposition error at every level.`, severity:'high' },
+      { error:`Using "actual/actually" to mean "current/currently"`, correction:`"Actually" = in fact / surprisingly. For "current": use "current", "present", "today's"`, explanation:`Classic false friend: "actual" in Spanish means "current". In English, "Actually, remote work is more productive" means "Surprisingly / In fact…" — not "Currently…". Very common at B2 and above.`, severity:'high' },
+      { error:`"I am agree with you" / "I am disagree"`, correction:`"I agree with you" / "I disagree"`, explanation:`"Agree" and "disagree" are verbs, not adjectives. The construction mirrors "estoy de acuerdo" but is grammatically wrong in English. One of the most frequent errors in debate contexts.`, severity:'high' },
+      { error:`"I work from home today" (for a temporary situation)`, correction:`"I'm working from home today"`, explanation:`Spanish uses Present Simple much more broadly (e.g., "Hoy trabajo desde casa"). English requires Present Continuous for temporary, in-progress situations. Persistent error at B1–B2.`, severity:'medium' },
+      { error:`"We make a meeting tomorrow"`, correction:`"We have / we're having a meeting tomorrow"`, explanation:`The make/do/have distinction has no direct Spanish equivalent (all map to "hacer" or "tener"). For scheduled events and meetings, "have" is the correct collocation — not "make" or "do".`, severity:'medium' },
+      { error:`Overusing "very" as an intensifier: "very productive", "very important"`, correction:`Use precise intensifiers: "remarkably productive", "critically important", "highly effective"`, explanation:`Spanish overreliance on "muy" maps directly to "very" in English. At B2+, this sounds flat and unnatural. Encourage students to build an intensifier bank as part of their vocabulary notebook.`, severity:'low' }
+    ],
+    teacherNotes: {
+      preparation:`Print topic discussion cards (one question per card) so students can refer to them without screens. Prepare a short 3–4 image slideshow for the warm-up hook. Have a whiteboard section reserved for "Language to Steal" — phrases you'll collect during monitoring and share during the debrief.`,
+      pacing:`The debate section is the core of the lesson — protect it. If the warm-up runs long, cut the icebreaker, not the discussion time. For 45-minute lessons, collapse the two role-play scenarios into one by assigning each half of the class a different scenario and then comparing debriefs. For 60 minutes, run both sequentially.`,
+      differentiation:`For stronger students (C1+): ask them to argue a position they personally disagree with during the debate — this forces more creative and complex language. For B1 students: pre-teach the functional phrases before the debate, not after, so they can use them in context. Pair stronger and weaker students strategically for role-plays.`,
+      errorCorrection:`Use delayed error correction throughout. During monitoring, note errors on a notepad (not on your phone — it looks like you're distracted). Save the last 5 minutes for a board-based correction slot: write 5–6 examples (mix of errors and excellent examples) and ask the group to identify and fix them. Never attribute an error to a specific student.`,
+      closingReflection:`End with this question: "What is one phrase from today's lesson that you will actually use at work this week — and in what situation?" Ask each student to commit to a specific context. This creates intentional transfer and gives you a natural hook for the next lesson's warm-up ("Last week you said you'd use X — did you?").`
+    }
+  };
+}
+
+async function fetchLesson(params, topic) {
+  const api = getAPIConfig();
+  if (!api.live) {
+    await new Promise(r => setTimeout(r, 1200));
+    return buildDemoLesson(params, topic);
+  }
+  const { system, user } = buildLessonPrompt(params, topic);
+  const raw = await callAPI(system, user, api);
+  return JSON.parse(raw);
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER: TOPIC SUGGESTIONS
+// ═══════════════════════════════════════════════
+
+function renderTopics(topics, params) {
+  const grid = document.getElementById('topics-grid');
+  grid.innerHTML = '';
+  selectedTopic = null;
+  document.getElementById('generate-section').classList.add('hidden');
+  document.getElementById('selected-topic-label').textContent = '—';
+
+  document.getElementById('topics-sub').textContent =
+    `${topics.length} topics for ${params.level} · ${params.sector} · ${params.duration} min`;
+
+  topics.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'topic-card section-card';
+    card.style.animationDelay = `${i * 0.06}s`;
+    card.innerHTML = `
+      <div class="flex items-start gap-2 mb-2">
+        <span class="w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 text-white" style="background:var(--accent)">${i+1}</span>
+        <h4 class="font-bold text-sm leading-snug" style="color:var(--text)">${t.title}</h4>
+      </div>
+      <p class="text-xs leading-relaxed mb-2" style="color:var(--text-muted)">${t.rationale}</p>
+      <p class="text-xs italic mb-2" style="color:var(--text-dim)">"${t.angle}"</p>
+      <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full"
+            style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#a78bfa">
+        📐 ${t.grammarFocus}
+      </span>`;
+
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedTopic = t.title;
+      document.getElementById('selected-topic-label').textContent = t.title;
+      document.getElementById('generate-section').classList.remove('hidden');
+      // Scroll sidebar generate button into view on mobile
+      document.getElementById('generate-section').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    });
+
+    grid.appendChild(card);
+  });
+
+  showState('topics-state');
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER: FULL LESSON PLAN
+// ═══════════════════════════════════════════════
+
+function renderPlan(data, params, topic) {
+  const dur = parseInt(params.duration, 10);
+  const timestamps = calcTimestamps(dur);
+
+  // Header
   document.getElementById('hdr-topic').textContent = topic;
   document.getElementById('hdr-sub').textContent =
-    `${sector} · ${students} student${students > 1 ? 's' : ''} · ${dur} minutes`;
+    `${params.sector} · ${params.students} student${params.students > 1 ? 's' : ''} · ${dur} minutes`;
 
-  const badgeData = [
-    { label: level, bg: 'bg-white/20' },
-    { label: sector, bg: 'bg-white/20' },
-    { label: `${dur} min`, bg: 'bg-white/20' }
-  ];
-  document.getElementById('hdr-badges').innerHTML = badgeData.map(b =>
-    `<span class="${b.bg} text-white text-xs font-semibold px-3 py-1 rounded-full">${b.label}</span>`
-  ).join('');
+  document.getElementById('hdr-badges').innerHTML =
+    [params.level, params.sector, `${dur} min`].map(l =>
+      `<span class="text-xs font-semibold px-3 py-1 rounded-full" style="background:var(--accent-bg);color:var(--accent2);border:1px solid var(--accent-border)">${l}</span>`
+    ).join('');
 
   // Timeline bar
-  const timelineHTML = `
-    <div class="flex rounded-lg overflow-hidden h-5 gap-0.5" title="Time allocation">
-      ${BAR_COLOURS.map((c, i) => {
-        const pct = (PROPORTIONS[i] * 100).toFixed(0);
-        return `<div class="${c} flex items-center justify-center text-white font-bold text-[9px] overflow-hidden transition-all"
-                     style="width:${pct}%"
-                     title="${BAR_LABELS[i]} (${pct}%)">
-                  ${pct}%
-                </div>`;
+  document.getElementById('timeline-bar').innerHTML = `
+    <div class="flex rounded-lg overflow-hidden h-5 gap-0.5">
+      ${BAR_COLOURS.map((c,i) => {
+        const pct = (PROPORTIONS[i]*100).toFixed(0);
+        return `<div class="${c} flex items-center justify-center text-white font-bold text-[9px] overflow-hidden" style="width:${pct}%" title="${BAR_LABELS[i]} (${pct}%)">${pct}%</div>`;
       }).join('')}
     </div>
     <div class="flex justify-between mt-1.5 text-brand-100 text-[10px] font-medium px-0.5">
-      ${BAR_LABELS.map((l, i) => `<span>${l}</span>`).join('')}
+      ${BAR_LABELS.map(l => `<span>${l}</span>`).join('')}
     </div>`;
-  document.getElementById('timeline-bar').innerHTML = timelineHTML;
 
-  // ── Build sections ───────────────────────────────────────────────
   const container = document.getElementById('sections-container');
   container.innerHTML = '';
 
+  const DARK_SEC = [
+    { bg:'#150f05', border:'#3a2a10', accent:'#f59e0b', accentFaint:'rgba(245,158,11,0.10)', label:'rgba(245,158,11,0.7)' },
+    { bg:'#060e1f', border:'#0e2040', accent:'#3b82f6', accentFaint:'rgba(59,130,246,0.10)',  label:'rgba(59,130,246,0.7)' },
+    { bg:'#100c1e', border:'#251850', accent:'#8b5cf6', accentFaint:'rgba(139,92,246,0.10)', label:'rgba(139,92,246,0.7)' },
+    { bg:'#071410', border:'#0d2e20', accent:'#10b981', accentFaint:'rgba(16,185,129,0.10)', label:'rgba(16,185,129,0.7)' },
+    { bg:'#150609', border:'#3a0e16', accent:'#f43f5e', accentFaint:'rgba(244,63,94,0.10)',  label:'rgba(244,63,94,0.7)' },
+  ];
+
   SECTION_META.forEach((meta, idx) => {
     const ts   = timestamps[idx];
+    const ds   = DARK_SEC[idx];
     const card = document.createElement('div');
-    card.className = `section-card delay-${idx + 1} bg-gradient-to-br ${meta.color} border ${meta.border} rounded-2xl shadow-sm overflow-hidden`;
+    card.className = `section-card delay-${idx+1} rounded-2xl shadow-sm overflow-hidden`;
+    card.style.cssText = `background:${ds.bg};border:1px solid ${ds.border}`;
 
-    let innerHTML = '';
+    const tsLabel = `${ts.start}–${ts.end} min · ${ts.len} min`;
+    let body = '';
 
-    // Section header
-    innerHTML += `
-      <div class="flex items-center gap-3 px-6 pt-5 pb-3 border-b ${meta.border} bg-white/50">
-        <div class="w-9 h-9 ${meta.accent} rounded-xl flex items-center justify-center text-white text-lg shadow-sm">
-          ${meta.emoji}
-        </div>
-        <div class="flex-1">
-          <h3 class="font-bold text-slate-800 text-base">${meta.title}</h3>
-          <p class="text-slate-500 text-xs">Section ${idx + 1} of 5</p>
-        </div>
-        <span class="ts-badge">${tsLabel(ts)} · ${ts.len} min</span>
-      </div>
-      <div class="px-6 py-5">`;
-
-    // ── Warm-Up content ─────────────────────────────────────────
-    if (meta.id === 'warmup' && data.warmup) {
+    // ── Warm-Up ────────────────────────────────────────────
+    if (meta.id === 'warmup') {
       const w = data.warmup;
-      innerHTML += `
+      const ic = (extra='') => `background:${ds.accentFaint};border:1px solid ${ds.border};border-radius:10px;padding:14px 16px;${extra}`;
+      body = `
         <div class="space-y-4">
-          <div class="bg-white/70 rounded-xl p-4 border border-orange-100">
-            <p class="text-xs font-bold text-orange-600 uppercase tracking-wide mb-1.5">🖼️ Visual Hook</p>
-            <p class="text-slate-700 text-sm leading-relaxed">${w.hook}</p>
+          <div style="${ic()}">
+            <p class="text-xs font-bold uppercase tracking-wide mb-1.5" style="color:${ds.accent}">🖼️ Visual Hook</p>
+            <p class="text-sm leading-relaxed" style="color:var(--text)">${w.hook}</p>
           </div>
-          <div class="bg-white/70 rounded-xl p-4 border border-orange-100">
-            <p class="text-xs font-bold text-orange-600 uppercase tracking-wide mb-1.5">💭 Opening Prompt</p>
-            <p class="text-slate-700 text-sm leading-relaxed italic">${w.promptQuestion}</p>
+          <div style="${ic()}">
+            <p class="text-xs font-bold uppercase tracking-wide mb-1.5" style="color:${ds.accent}">💭 Opening Prompt</p>
+            <p class="text-sm leading-relaxed italic" style="color:var(--text)">${w.promptQuestion}</p>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
-              <p class="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1.5">🎯 Icebreaker</p>
-              <p class="text-slate-600 text-sm leading-relaxed">${w.icebreaker}</p>
+            <div style="${ic()}">
+              <p class="text-xs font-bold uppercase tracking-wide mb-1.5" style="color:${ds.accent}">🎯 Icebreaker</p>
+              <p class="text-sm leading-relaxed" style="color:var(--text-muted)">${w.icebreaker}</p>
             </div>
-            <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
-              <p class="text-xs font-bold text-orange-700 uppercase tracking-wide mb-1.5">📝 Teacher Note</p>
-              <p class="text-slate-600 text-sm leading-relaxed">${w.teacherNote}</p>
+            <div style="${ic()}">
+              <p class="text-xs font-bold uppercase tracking-wide mb-1.5" style="color:${ds.accent}">📝 Teacher Note</p>
+              <p class="text-sm leading-relaxed" style="color:var(--text-muted)">${w.teacherNote}</p>
             </div>
           </div>
         </div>`;
     }
 
-    // ── Debate content ──────────────────────────────────────────
-    if (meta.id === 'debate' && data.questions) {
-      innerHTML += `
-        <p class="text-xs text-slate-500 mb-4 font-medium">Four high-value questions calibrated to <strong>${level}</strong> — from accessible to abstract. Allocate ~${Math.round(ts.len / 4)} minutes per question or flow freely.</p>
+    // ── Debate ─────────────────────────────────────────────
+    if (meta.id === 'debate') {
+      const ic = `background:${ds.accentFaint};border:1px solid ${ds.border};border-radius:10px;padding:14px 16px;`;
+      body = `
+        <p class="text-xs mb-4" style="color:var(--text-muted)">Four questions calibrated to <strong style="color:var(--text)">${params.level}</strong>. ~${Math.round(ts.len/4)} min per question or flow freely.</p>
         <div class="space-y-3">
-          ${data.questions.map((q, qi) => `
-            <div class="flex gap-3 items-start bg-white/70 rounded-xl p-4 border border-blue-100">
-              <span class="w-7 h-7 shrink-0 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm">${qi + 1}</span>
-              <p class="text-slate-700 text-sm leading-relaxed">${q}</p>
+          ${(data.questions||[]).map((q,qi) => `
+            <div class="flex gap-3 items-start" style="${ic}">
+              <span class="w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm" style="background:${ds.accent}">${qi+1}</span>
+              <p class="text-sm leading-relaxed" style="color:var(--text)">${q}</p>
             </div>`).join('')}
         </div>
-        <div class="mt-4 bg-blue-50 rounded-xl p-4 border border-blue-100">
-          <p class="text-xs font-bold text-blue-700 uppercase tracking-wide mb-1.5">💡 Facilitation Tips</p>
-          <ul class="text-slate-600 text-sm space-y-1 list-disc list-inside">
-            <li>Use questions 1–2 as whole-group openers; 3–4 as pair/small-group tasks.</li>
-            <li>Provide question cards printed for each student — this reduces memory load.</li>
-            <li>Note interesting language for delayed error correction at the end.</li>
+        <div class="mt-4" style="${ic}">
+          <p class="text-xs font-bold uppercase tracking-wide mb-1.5" style="color:${ds.accent}">💡 Facilitation Tips</p>
+          <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--text-muted)">
+            <li>Questions 1–2 as whole-group openers; 3–4 as pair/small-group tasks.</li>
+            <li>Print question cards — reduces cognitive load and keeps discussion flowing.</li>
+            <li>Note interesting language on your notepad for delayed error correction.</li>
           </ul>
         </div>`;
     }
 
-    // ── Language Upgrade content ────────────────────────────────
-    if (meta.id === 'language' && data.language) {
-      const lang = data.language;
-      const renderLangItems = (items, type, icon, colourClass) => `
+    // ── Language ────────────────────────────────────────────
+    if (meta.id === 'language') {
+      const L = data.language || {};
+      const ic = `background:${ds.accentFaint};border:1px solid ${ds.border};border-radius:10px;padding:12px 16px;`;
+      const tipStyle = `background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.2);border-radius:8px;padding:8px 12px;margin-top:8px;`;
+      const renderItems = (items, type, icon) => `
         <div class="mb-5">
-          <h4 class="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
-            <span>${icon}</span> ${type}
-          </h4>
+          <h4 class="font-bold text-sm mb-3" style="color:var(--text)">${icon} ${type}</h4>
           <div class="space-y-3">
-            ${items.map(item => `
-              <div class="lang-pill">
+            ${(items||[]).map(item => `
+              <div style="${ic}">
                 <div class="flex flex-wrap items-center gap-2 mb-1.5">
-                  <span class="font-bold text-brand-700 text-sm">${item.phrase}</span>
-                  <span class="text-[10px] bg-brand-500 text-white px-2 py-0.5 rounded-full uppercase font-bold tracking-wide">${type.split(' ')[0]}</span>
+                  <span class="font-bold text-sm" style="color:${ds.accent}">${item.phrase}</span>
+                  <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full text-white" style="background:${ds.accent}">${type.split(' ')[0]}</span>
                 </div>
-                <p class="text-slate-600 text-sm mb-1.5"><strong class="text-slate-700">Meaning:</strong> ${item.definition}</p>
-                <p class="text-slate-600 text-sm mb-1.5"><strong class="text-slate-700">Example:</strong> <em>${item.example}</em></p>
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mt-2">
-                  <p class="text-xs text-amber-700"><strong>🇪🇸 Spanish tip:</strong> ${item.tip}</p>
+                <p class="text-sm mb-1" style="color:var(--text-muted)"><strong style="color:var(--text)">Meaning:</strong> ${item.definition}</p>
+                <p class="text-sm mb-1" style="color:var(--text-muted)"><strong style="color:var(--text)">Example:</strong> <em>${item.example}</em></p>
+                <div style="${tipStyle}">
+                  <p class="text-xs" style="color:#d97706"><strong>🇪🇸 Spanish tip:</strong> ${item.tip}</p>
                 </div>
               </div>`).join('')}
           </div>
         </div>`;
-      innerHTML += renderLangItems(lang.phrasalVerbs, 'Phrasal Verbs', '🔀', 'violet');
-      innerHTML += renderLangItems(lang.idioms, 'Idioms', '🗣️', 'purple');
-      innerHTML += renderLangItems(lang.functionalPhrases, 'Functional Phrases', '💼', 'indigo');
+      body = renderItems(L.phrasalVerbs, 'Phrasal Verbs', '🔀')
+           + renderItems(L.idioms, 'Idioms', '🗣️')
+           + renderItems(L.functionalPhrases, 'Functional Phrases', '💼');
     }
 
-    // ── Role-Play content ───────────────────────────────────────
-    if (meta.id === 'roleplay' && data.roleplay) {
-      const rp = data.roleplay;
-      const renderScenario = (scenario, num) => `
-        <div class="roleplay-card mb-4">
+    // ── Role-plays ──────────────────────────────────────────
+    if (meta.id === 'roleplay') {
+      const rp = data.roleplay || {};
+      const ic  = `background:${ds.accentFaint};border:1px solid ${ds.border};border-radius:10px;padding:12px 14px;`;
+      const icA = `background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:12px;`;
+      const icB = `background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:12px;`;
+      const icT = `background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:12px;`;
+      const renderScenario = (s, num) => `
+        <div class="mb-4" style="background:var(--surface3);border:1px solid var(--border2);border-radius:12px;padding:16px 20px">
           <div class="flex items-center gap-2 mb-3">
-            <span class="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">${num}</span>
-            <h4 class="font-bold text-slate-800 text-sm">${scenario.title}</h4>
+            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:${ds.accent}">${num}</span>
+            <h4 class="font-bold text-sm" style="color:var(--text)">${s.title}</h4>
           </div>
-          <p class="text-xs font-bold text-emerald-700 uppercase tracking-wide mb-1">Context</p>
-          <p class="text-slate-600 text-sm mb-3 leading-relaxed">${scenario.context}</p>
+          <p class="text-xs font-bold uppercase tracking-wide mb-1" style="color:${ds.accent}">Context</p>
+          <p class="text-sm mb-3 leading-relaxed" style="color:var(--text-muted)">${s.context}</p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p class="text-xs font-bold text-blue-700 mb-1">👤 Role A</p>
-              <p class="text-slate-600 text-sm leading-relaxed">${scenario.roleA}</p>
+            <div style="${icA}">
+              <p class="text-xs font-bold mb-1" style="color:#60a5fa">👤 Role A</p>
+              <p class="text-sm leading-relaxed" style="color:var(--text-muted)">${s.roleA}</p>
             </div>
-            <div class="bg-violet-50 border border-violet-200 rounded-lg p-3">
-              <p class="text-xs font-bold text-violet-700 mb-1">👤 Role B</p>
-              <p class="text-slate-600 text-sm leading-relaxed">${scenario.roleB}</p>
+            <div style="${icB}">
+              <p class="text-xs font-bold mb-1" style="color:#a78bfa">👤 Role B</p>
+              <p class="text-sm leading-relaxed" style="color:var(--text-muted)">${s.roleB}</p>
             </div>
           </div>
-          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-            <p class="text-xs font-bold text-emerald-700 mb-1">🗝️ Useful Language</p>
-            <p class="text-slate-600 text-sm italic">${scenario.usefulLanguage}</p>
+          <div style="${icT}" class="mb-3">
+            <p class="text-xs font-bold mb-1" style="color:#f59e0b">📝 Teacher Notes</p>
+            <p class="text-sm leading-relaxed" style="color:var(--text-muted)">${s.teacherNotes || ''}</p>
+          </div>
+          <div style="${ic}">
+            <p class="text-xs font-bold mb-1" style="color:${ds.accent}">🗝️ Useful Language</p>
+            <p class="text-sm italic" style="color:var(--text-muted)">${s.usefulLanguage}</p>
           </div>
         </div>`;
-      innerHTML += `
-        <p class="text-xs text-slate-500 mb-4 font-medium">
-          Two sector-specific scenarios for <strong>${sector}</strong>. Scenario 1 is internal/peer; Scenario 2 is high-stakes external. Allocate ~${Math.round(ts.len / 2)} min each.
-        </p>
-        ${renderScenario(rp.scenario1 || rp['scenario1'], 1)}
-        ${renderScenario(rp.scenario2 || rp['scenario2'], 2)}`;
+      body = `<p class="text-xs mb-4" style="color:var(--text-muted)">Scenario 1 = peer/internal · Scenario 2 = high-stakes external. ~${Math.round(ts.len/2)} min each.</p>
+              ${renderScenario(rp.scenario1||{}, 1)}
+              ${renderScenario(rp.scenario2||{}, 2)}`;
     }
 
-    // ── Pitfalls content ────────────────────────────────────────
-    if (meta.id === 'pitfalls' && data.pitfalls) {
-      const severityConfig = {
-        high:   { icon: '🔴', label: 'High', bg: 'bg-red-50 border-red-200',    text: 'text-red-700' },
-        medium: { icon: '🟡', label: 'Med',  bg: 'bg-yellow-50 border-yellow-200', text: 'text-yellow-700' },
-        low:    { icon: '🟢', label: 'Low',  bg: 'bg-green-50 border-green-200', text: 'text-green-700' }
+    // ── Pitfalls ────────────────────────────────────────────
+    if (meta.id === 'pitfalls') {
+      const sev = {
+        high:   { icon:'🔴', style:'background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.3);color:#f87171', label:'High' },
+        medium: { icon:'🟡', style:'background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#fbbf24', label:'Med' },
+        low:    { icon:'🟢', style:'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399', label:'Low' }
       };
-      innerHTML += `
-        <p class="text-xs text-slate-500 mb-4 font-medium">
-          Target these as a <strong>delayed error correction</strong> exercise at the end of class. Write examples from student output on the board and ask the group to self-correct first.
-        </p>
-        <div class="space-y-0">
-          ${data.pitfalls.map(p => {
-            const sc = severityConfig[p.severity] || severityConfig.medium;
-            return `<div class="pitfall-row">
-              <span class="text-lg mt-0.5">${sc.icon}</span>
-              <div class="flex-1">
-                <div class="flex flex-wrap items-center gap-2 mb-1">
-                  <span class="line-through text-red-600 font-semibold text-sm">${p.error}</span>
-                  <span class="text-slate-400">→</span>
-                  <span class="text-green-700 font-bold text-sm">${p.correction}</span>
-                  <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${sc.bg} ${sc.text}">${sc.label}</span>
-                </div>
-                <p class="text-slate-500 text-xs leading-relaxed">${p.explanation}</p>
+      body = `
+        <p class="text-xs mb-4" style="color:var(--text-muted)">Use as a <strong style="color:var(--text)">delayed error correction</strong> exercise. Write examples from student output on the board and ask the group to self-correct first.</p>
+        <div>${(data.pitfalls||[]).map(p => {
+          const s = sev[p.severity] || sev.medium;
+          return `<div class="pitfall-row">
+            <span class="text-lg mt-0.5">${s.icon}</span>
+            <div class="flex-1">
+              <div class="flex flex-wrap items-center gap-2 mb-1">
+                <span class="line-through font-semibold text-sm" style="color:#f87171">${p.error}</span>
+                <span style="color:var(--text-dim)">→</span>
+                <span class="font-bold text-sm" style="color:#34d399">${p.correction}</span>
+                <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full" style="${s.style}">${s.label}</span>
               </div>
-            </div>`;
-          }).join('')}
-        </div>`;
+              <p class="text-xs leading-relaxed" style="color:var(--text-muted)">${p.explanation}</p>
+            </div>
+          </div>`;
+        }).join('')}</div>`;
     }
 
-    innerHTML += `</div>`; // close .px-6.py-5
-    card.innerHTML = innerHTML;
+    card.innerHTML = `
+      <div class="flex items-center gap-3 px-6 pt-5 pb-3" style="border-bottom:1px solid ${ds.border}">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-lg shadow-sm" style="background:${ds.accent}">${meta.emoji}</div>
+        <div class="flex-1">
+          <h3 class="font-bold text-base" style="color:var(--text)">${meta.title}</h3>
+          <p class="text-xs" style="color:var(--text-muted)">Section ${idx+1} of 5</p>
+        </div>
+        <span class="ts-badge">${tsLabel}</span>
+      </div>
+      <div class="px-6 py-5">${body}</div>`;
+
     container.appendChild(card);
   });
-}
 
-
-// ═══════════════════════════════════════════════════════════════════
-//  SHOW / HIDE STATES
-// ═══════════════════════════════════════════════════════════════════
-
-function showEmpty()   {
-  document.getElementById('empty-state').classList.remove('hidden');
-  document.getElementById('loading-state').classList.add('hidden');
-  document.getElementById('generated-content').classList.add('hidden');
-}
-function showLoading(msg) {
-  document.getElementById('empty-state').classList.add('hidden');
-  document.getElementById('loading-state').classList.remove('hidden');
-  document.getElementById('loading-state').classList.remove('hidden');
-  document.getElementById('loading-state').classList.add('flex');
-  document.getElementById('loading-msg').textContent = msg || 'Generating your lesson plan…';
-  document.getElementById('generated-content').classList.add('hidden');
-}
-function showContent() {
-  document.getElementById('empty-state').classList.add('hidden');
-  document.getElementById('loading-state').classList.add('hidden');
-  document.getElementById('generated-content').classList.remove('hidden');
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-//  FORM SUBMISSION HANDLER
-// ═══════════════════════════════════════════════════════════════════
-
-document.getElementById('lesson-form').addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  // Read form values
-  const params = {
-    level:    document.getElementById('level').value,
-    students: document.getElementById('students').value,
-    topic:    document.getElementById('topic').value.trim(),
-    duration: document.querySelector('input[name="duration"]:checked')?.value || '60',
-    sector:   document.getElementById('sector').value,
-    extra:    document.getElementById('extra').value.trim()
-  };
-
-  // Basic validation
-  if (!params.level || !params.topic || !params.sector) {
-    alert('Please fill in all required fields (Level, Topic, and Sector).');
-    return;
+  // ── Overall Teacher Notes section ───────────────────────
+  if (data.teacherNotes) {
+    const tn = data.teacherNotes;
+    const noteItems = [
+      { icon:'📦', label:'Preparation',        key:'preparation' },
+      { icon:'⏱️', label:'Pacing',              key:'pacing' },
+      { icon:'🔀', label:'Differentiation',    key:'differentiation' },
+      { icon:'✏️', label:'Error Correction',   key:'errorCorrection' },
+      { icon:'🌟', label:'Closing Reflection', key:'closingReflection' },
+    ];
+    const tnCard = document.createElement('div');
+    tnCard.className = 'section-card delay-5 rounded-2xl shadow-sm overflow-hidden';
+    tnCard.style.cssText = `background:var(--surface);border:1px solid var(--border2)`;
+    tnCard.innerHTML = `
+      <div class="flex items-center gap-3 px-6 pt-5 pb-3" style="border-bottom:1px solid var(--border2)">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shadow-sm" style="background:var(--surface3);border:1px solid var(--border2)">🎓</div>
+        <div>
+          <h3 class="font-bold text-base" style="color:var(--text)">Overall Teacher Notes</h3>
+          <p class="text-xs" style="color:var(--text-muted)">Preparation, pacing, differentiation, and closing advice</p>
+        </div>
+      </div>
+      <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+        ${noteItems.map(n => `
+          <div class="rounded-xl p-4 ${n.key === 'closingReflection' ? 'md:col-span-2' : ''}"
+               style="background:var(--surface3);border:1px solid var(--border)">
+            <p class="text-xs font-bold uppercase tracking-wide mb-1.5" style="color:var(--accent2)">${n.icon} ${n.label}</p>
+            <p class="text-sm leading-relaxed" style="color:var(--text-muted)">${tn[n.key] || '—'}</p>
+          </div>`).join('')}
+      </div>`;
+    container.appendChild(tnCard);
   }
 
-  const isDemoMode  = document.getElementById('demo-toggle').checked === false;
-  const apiKey      = document.getElementById('api-key').value.trim();
-  const provider    = document.getElementById('api-provider').value;
-  const isLiveMode  = apiKey.length > 0 && !isDemoMode;
+  showState('generated-content');
+}
 
-  const timestamps  = calcTimestamps(parseInt(params.duration, 10));
+// ═══════════════════════════════════════════════
+//  STEP INDICATOR UPDATER
+// ═══════════════════════════════════════════════
+
+function setStep(n, label) {
+  [1,2,3].forEach(i => {
+    const dot = document.getElementById(`dot-${i}`);
+    if (i < n)  { dot.className = 'step-dot done';     dot.textContent = '✓'; }
+    if (i === n){ dot.className = 'step-dot active';   dot.textContent = String(i); }
+    if (i > n)  { dot.className = 'step-dot inactive'; dot.textContent = String(i); }
+  });
+  document.getElementById('step-label').textContent = label;
+}
+
+// ═══════════════════════════════════════════════
+//  FORM: STEP 1 SUBMIT → GET TOPICS
+// ═══════════════════════════════════════════════
+
+document.getElementById('params-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const params = getParams();
+  if (!params.level || !params.sector) {
+    alert('Please fill in Level and Sector before continuing.');
+    return;
+  }
+  currentParams = params;
+  selectedTopic = null;
+
+  setStep(2, 'Step 2: Pick a topic');
+  setLoading('Asking the AI for topic ideas…', `Level ${params.level} · ${params.sector} · ${params.duration} min`);
 
   try {
-    if (isLiveMode) {
-      // ── LIVE API MODE ────────────────────────────────────────
-      showLoading(`Calling ${provider === 'openai' ? 'OpenAI GPT-4o' : 'Anthropic Claude'}…`);
-      const data = await callLiveAPI(params, apiKey, provider);
-      renderPlan(data, params, timestamps);
-      showContent();
-    } else {
-      // ── DEMO MODE ─────────────────────────────────────────────
-      // Simulate a short loading delay for realism
-      showLoading('Generating demo lesson plan…');
-      await new Promise(r => setTimeout(r, 900));
-      const data = buildDemoData(params);
-      renderPlan(data, params, timestamps);
-      showContent();
-    }
+    const topics = await fetchTopicSuggestions(params);
+    renderTopics(topics, params);
   } catch (err) {
-    showEmpty();
-    alert(`Error generating lesson plan:\n\n${err.message}\n\nPlease check your API key and try again, or switch to Demo mode.`);
+    showState('empty-state');
+    setStep(1, 'Step 1: Your details');
+    alert(`Could not fetch topics:\n\n${err.message}\n\nCheck your API key or try again.`);
     console.error(err);
   }
 });
 
+// ═══════════════════════════════════════════════
+//  BUTTON: GENERATE LESSON
+// ═══════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════════════
-//  DEMO TOGGLE LOGIC
-// ═══════════════════════════════════════════════════════════════════
-
-const demoToggle = document.getElementById('demo-toggle');
-const toggleDot  = document.getElementById('toggle-dot');
-const apiStatus  = document.getElementById('api-status');
-const apiKeyInput = document.getElementById('api-key');
-
-function updateToggleUI() {
-  const isLive = !demoToggle.checked;  // checkbox = demo on (checked), live off
-  if (isLive) {
-    toggleDot.classList.remove('translate-x-0');
-    toggleDot.classList.add('translate-x-4');
-    apiStatus.textContent = 'Live mode — API key required';
-    apiStatus.className   = 'text-green-400 font-semibold whitespace-nowrap';
-  } else {
-    toggleDot.classList.remove('translate-x-4');
-    toggleDot.classList.add('translate-x-0');
-    apiStatus.textContent = 'Demo mode active';
-    apiStatus.className   = 'text-slate-500 italic whitespace-nowrap';
+document.getElementById('btn-generate').addEventListener('click', async function() {
+  if (!selectedTopic) {
+    alert('Please click a topic card to select it first.');
+    return;
   }
-}
 
-demoToggle.addEventListener('change', updateToggleUI);
+  setStep(3, 'Step 3: Your lesson plan');
+  setLoading('Generating your lesson plan…', `"${selectedTopic}" · ${currentParams.level} · ${currentParams.sector}`);
 
-// Also update status when API key is typed
-apiKeyInput.addEventListener('input', function() {
-  if (this.value.trim().length > 0 && !demoToggle.checked) {
-    apiStatus.textContent = '✓ API key detected — ready for live generation';
-    apiStatus.className   = 'text-green-400 font-semibold whitespace-nowrap';
-  } else {
-    updateToggleUI();
+  try {
+    const data = await fetchLesson(currentParams, selectedTopic);
+    renderPlan(data, currentParams, selectedTopic);
+  } catch (err) {
+    showState('topics-state');
+    setStep(2, 'Step 2: Pick a topic');
+    alert(`Could not generate lesson plan:\n\n${err.message}\n\nCheck your API key or try again.`);
+    console.error(err);
   }
 });
 
-// Initialise
-updateToggleUI();
+// ═══════════════════════════════════════════════
+//  BUTTON: BACK (reset to param form)
+// ═══════════════════════════════════════════════
 
-
-// ═══════════════════════════════════════════════════════════════════
-//  QUICK TOPIC CHIPS
-// ═══════════════════════════════════════════════════════════════════
-
-const chipContainer = document.getElementById('topic-chips');
-QUICK_TOPICS.forEach(t => {
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.textContent = t;
-  btn.className = 'text-[10px] font-medium bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-full px-2.5 py-0.5 transition cursor-pointer';
-  btn.addEventListener('click', () => {
-    document.getElementById('topic').value = t;
-  });
-  chipContainer.appendChild(btn);
+document.getElementById('btn-back').addEventListener('click', function() {
+  selectedTopic = null;
+  document.getElementById('generate-section').classList.add('hidden');
+  document.getElementById('selected-topic-label').textContent = '—';
+  setStep(1, 'Step 1: Your details');
+  showState('empty-state');
 });
 
+// ═══════════════════════════════════════════════
+//  API KEY INPUT → STATUS UPDATE
+// ═══════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════════════
-//  PRINT BUTTON (top-right in hero bar) → window.print()
-// ═══════════════════════════════════════════════════════════════════
-// The print button in the hero bar uses onclick="window.print()" directly.
-// Print styles at the top of this file hide all sidebar/UI chrome.
-
+document.getElementById('api-key').addEventListener('input', function() {
+  const status = document.getElementById('api-status');
+  if (this.value.trim().length > 10) {
+    status.textContent = '✓ API key detected — live generation enabled';
+    status.style.color = '#34d399';
+    status.style.fontStyle = 'normal';
+  } else {
+    status.textContent = 'No key — demo mode active';
+    status.style.color = 'var(--text-dim)';
+    status.style.fontStyle = 'italic';
+  }
+});
 </script>
 </body>
 </html>
