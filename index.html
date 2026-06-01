@@ -351,6 +351,20 @@
       </ol>
     </div>
 
+    <!-- Error banner (hidden by default) -->
+    <div id="error-banner" class="hidden rounded-2xl px-6 py-5 mb-1 no-print"
+         style="background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.35)">
+      <div class="flex items-start gap-3">
+        <span class="text-2xl mt-0.5">🚨</span>
+        <div>
+          <p class="font-bold text-sm mb-1" style="color:#f87171">Something went wrong</p>
+          <p id="error-text" class="text-sm leading-relaxed" style="color:var(--text-muted)"></p>
+          <button onclick="document.getElementById('error-banner').classList.add('hidden')"
+                  class="mt-3 text-xs underline" style="color:#f87171">Dismiss</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading state -->
     <div id="loading-state" class="hidden rounded-2xl flex-col items-center justify-center text-center py-24 px-8"
          style="background:var(--surface);border:1px solid var(--border)">
@@ -446,6 +460,13 @@ function getAPIConfig() {
   return { key, provider, live: key.length > 10 };
 }
 
+function showError(msg) {
+  const banner = document.getElementById('error-banner');
+  document.getElementById('error-text').textContent = msg;
+  banner.classList.remove('hidden');
+  banner.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
 function showState(id) {
   ['empty-state','loading-state','topics-state','generated-content'].forEach(s => {
     const el = document.getElementById(s);
@@ -531,23 +552,36 @@ async function callAPI(systemPrompt, userMessage, { key, provider }) {
   // so the payload structure is identical — only the URL and
   // Authorization header change.
   if (provider === 'mistral') {
-    const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${key}` },
-      body: JSON.stringify({
-        model: 'mistral-large-latest',   // swap to e.g. 'mistral-medium-latest' if preferred
-        temperature: 0.85,
-        max_tokens: 4096,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user',   content: userMessage  }
-        ]
-      })
-    });
-    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.message || `Mistral ${res.status}`); }
+    // Mistral uses OpenAI-compatible chat completions.
+    // response_format is omitted here — we strip code fences from the output
+    // instead, since some Mistral models ignore the json_object constraint.
+    let res;
+    try {
+      res = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${key}` },
+        body: JSON.stringify({
+          model: 'mistral-large-latest',
+          temperature: 0.7,
+          max_tokens: 4096,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user',   content: userMessage  }
+          ]
+        })
+      });
+    } catch (networkErr) {
+      // Likely a CORS or network error — give a clear message
+      throw new Error('Network error reaching Mistral. This can happen if your browser blocks the request. Try: open the file via a local server (e.g. VS Code Live Server) instead of double-clicking it.');
+    }
+    if (!res.ok) {
+      const e = await res.json().catch(()=>({}));
+      throw new Error(e?.message || e?.error?.message || `Mistral API error ${res.status}`);
+    }
     const d = await res.json();
-    return d.choices[0].message.content;   // same envelope as OpenAI
+    const raw = d.choices[0].message.content;
+    // Strip markdown code fences if the model wrapped the JSON
+    return raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
   }
 
   throw new Error('Unknown provider');
@@ -1091,7 +1125,7 @@ document.getElementById('params-form').addEventListener('submit', async function
   } catch (err) {
     showState('empty-state');
     setStep(1, 'Step 1: Your details');
-    alert(`Could not fetch topics:\n\n${err.message}\n\nCheck your API key or try again.`);
+    showError(err.message);
     console.error(err);
   }
 });
@@ -1115,7 +1149,7 @@ document.getElementById('btn-generate').addEventListener('click', async function
   } catch (err) {
     showState('topics-state');
     setStep(2, 'Step 2: Pick a topic');
-    alert(`Could not generate lesson plan:\n\n${err.message}\n\nCheck your API key or try again.`);
+    showError(err.message);
     console.error(err);
   }
 });
