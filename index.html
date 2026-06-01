@@ -219,6 +219,7 @@
     <select id="api-provider" class="rounded px-2 py-1 text-xs" style="background:var(--surface3);color:var(--text);border:1px solid var(--border2)">
       <option value="openai">OpenAI (GPT-4o)</option>
       <option value="anthropic">Anthropic (Claude)</option>
+      <option value="mistral">Mistral AI</option>
     </select>
     <input id="api-key" type="password" placeholder="Paste your API key here…"
            class="rounded px-3 py-1 text-xs flex-1 min-w-0" style="background:var(--surface3);color:var(--text);border:1px solid var(--border2)" />
@@ -523,6 +524,30 @@ async function callAPI(systemPrompt, userMessage, { key, provider }) {
     const raw = d.content[0].text;
     // Claude sometimes wraps JSON in code fences — strip them
     return raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
+  }
+
+  // ── Mistral ─────────────────────────────────────────────
+  // Mistral uses the same chat completions schema as OpenAI,
+  // so the payload structure is identical — only the URL and
+  // Authorization header change.
+  if (provider === 'mistral') {
+    const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'mistral-large-latest',   // swap to e.g. 'mistral-medium-latest' if preferred
+        temperature: 0.85,
+        max_tokens: 4096,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user',   content: userMessage  }
+        ]
+      })
+    });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.message || `Mistral ${res.status}`); }
+    const d = await res.json();
+    return d.choices[0].message.content;   // same envelope as OpenAI
   }
 
   throw new Error('Unknown provider');
